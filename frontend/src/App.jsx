@@ -17,6 +17,8 @@ const colors = {
   badTint: '#FBEDEB',
   avatar: '#ECEAE4',
   star: '#E8B100',
+  zomato: '#E23744',
+  zomatoTint: '#FDF0F0'
 };
 
 // Five-point star SVG path
@@ -55,7 +57,9 @@ const ICONS = {
   x: 'M6 6l12 12M18 6L6 18',
   chevron: 'M9 6l6 6-6 6',
   copy: 'M8 4v12a2 2 0 002 2h8a2 2 0 002-2V8l-6-6H10a2 2 0 00-2 2z M4 8v12a2 2 0 002 2h10',
-  shield: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'
+  shield: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z',
+  download: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4 M7 10l5 5 5-5 M12 15V3',
+  bell: 'M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9 M13.73 21a2 2 0 0 1-3.46 0'
 };
 
 function Icon({ name, size = 22, color = colors.ink, stroke = 1.75 }) {
@@ -141,9 +145,10 @@ function PanelRow({ children, borderBottom = true, style, onClick }) {
   );
 }
 
-function Button({ label, onClick, variant = 'primary', disabled = false, fullWidth = true }) {
+function Button({ label, onClick, variant = 'primary', disabled = false, fullWidth = true, size = 'md' }) {
   const isSec = variant === 'secondary';
   const isDanger = variant === 'danger';
+  const isZomato = variant === 'zomato';
 
   let bg = colors.brand;
   let fg = colors.onBrand;
@@ -156,7 +161,13 @@ function Button({ label, onClick, variant = 'primary', disabled = false, fullWid
   } else if (isDanger) {
     bg = colors.bad;
     fg = '#FFFFFF';
+  } else if (isZomato) {
+    bg = colors.zomato;
+    fg = '#FFFFFF';
   }
+
+  const height = size === 'sm' ? '38px' : isSec ? '48px' : '52px';
+  const fontSize = size === 'sm' ? '13px' : '15px';
 
   return (
     <button
@@ -164,19 +175,19 @@ function Button({ label, onClick, variant = 'primary', disabled = false, fullWid
       disabled={disabled}
       style={{
         width: fullWidth ? '100%' : 'auto',
-        height: isSec ? '48px' : '52px',
+        height,
         backgroundColor: bg,
         color: fg,
         border,
         borderRadius: '12px',
         fontWeight: 600,
-        fontSize: '15px',
+        fontSize,
         cursor: disabled ? 'not-allowed' : 'pointer',
         opacity: disabled ? 0.6 : 1,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '0 20px',
+        padding: size === 'sm' ? '0 14px' : '0 20px',
         transition: 'all 0.1s ease',
         boxShadow: isSec ? 'none' : '0 1px 2px rgba(0,0,0,0.05)'
       }}
@@ -238,6 +249,47 @@ export default function App() {
   const [decided, setDecided] = useState(false);
   const [revokedCreds, setRevokedCreds] = useState(new Set());
 
+  // PWA Install Prompt State
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [isInstalled, setIsInstalled] = useState(false);
+  const [installSuccessToast, setInstallSuccessToast] = useState(false);
+
+  // Zomato Inbox Verification Request State
+  const [zomatoVerified, setZomatoVerified] = useState(false);
+
+  // Capture PWA beforeinstallprompt event
+  useEffect(() => {
+    const handleBeforeInstall = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+      setIsInstalled(true);
+    }
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+    };
+  }, []);
+
+  const triggerPwaInstall = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setIsInstalled(true);
+      }
+      setDeferredPrompt(null);
+    } else {
+      // Direct user instruction toast for browsers without prompt event (e.g., iOS Safari or already installable)
+      setInstallSuccessToast(true);
+      setTimeout(() => setInstallSuccessToast(false), 3500);
+    }
+  };
+
   // 60-second QR countdown loop
   useEffect(() => {
     const timer = setInterval(() => {
@@ -296,6 +348,29 @@ export default function App() {
         flexDirection: 'column',
         position: 'relative'
       }}>
+
+        {/* PWA Install Notification Toast */}
+        {installSuccessToast && (
+          <div style={{
+            position: 'fixed',
+            top: '16px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            backgroundColor: colors.ink,
+            color: '#FFFFFF',
+            padding: '10px 18px',
+            borderRadius: '10px',
+            fontSize: '13px',
+            zIndex: 9999,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <Icon name="check" size={16} color={colors.ok} />
+            <span>To install: Tap browser menu (⋮ or Share) & select "Add to Home Screen"</span>
+          </div>
+        )}
         
         {/* Main Scrollable Body */}
         <div style={{
@@ -334,7 +409,7 @@ export default function App() {
             }}>
               {[
                 { id: 'wallet', label: 'Wallet', icon: 'wallet' },
-                { id: 'inbox', label: 'Inbox', icon: 'inbox' },
+                { id: 'inbox', label: 'Inbox', icon: 'inbox', badge: !zomatoVerified },
                 { id: 'share', label: 'Share', icon: 'share' },
                 { id: 'me', label: 'Me', icon: 'me' }
               ].map((t) => {
@@ -354,10 +429,24 @@ export default function App() {
                       justifyContent: 'center',
                       gap: '4px',
                       cursor: 'pointer',
-                      color: active ? colors.brand : colors.muted
+                      color: active ? colors.brand : colors.muted,
+                      position: 'relative'
                     }}
                   >
-                    <Icon name={t.icon} size={20} color={active ? colors.brand : colors.muted} stroke={active ? 2.2 : 1.75} />
+                    <div style={{ position: 'relative' }}>
+                      <Icon name={t.icon} size={20} color={active ? colors.brand : colors.muted} stroke={active ? 2.2 : 1.75} />
+                      {t.badge && (
+                        <span style={{
+                          position: 'absolute',
+                          top: '-2px',
+                          right: '-6px',
+                          width: '8px',
+                          height: '8px',
+                          borderRadius: '50%',
+                          backgroundColor: colors.zomato
+                        }} />
+                      )}
+                    </div>
                     <span style={{ fontSize: '12px', fontWeight: active ? 600 : 500 }}>{t.label}</span>
                   </button>
                 );
@@ -373,7 +462,33 @@ export default function App() {
   function renderWalletScreen() {
     return (
       <div style={{ display: 'flex', flexDirection: 'column' }}>
-        <Brand />
+        {/* Header with Brand Logo & PWA Install Button */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Brand />
+          {!isInstalled && (
+            <button
+              onClick={triggerPwaInstall}
+              title="Install App as PWA"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 12px',
+                borderRadius: '8px',
+                backgroundColor: colors.surface,
+                border: `1px solid ${colors.line}`,
+                color: colors.brand,
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
+              }}
+            >
+              <Icon name="download" size={14} color={colors.brand} stroke={2.2} />
+              <span>Install PWA</span>
+            </button>
+          )}
+        </div>
 
         {/* Holder Identity */}
         <div style={{ marginTop: '20px' }}>
@@ -585,19 +700,101 @@ export default function App() {
     );
   }
 
-  /* TAB 3: INBOX */
+  /* TAB 3: INBOX WITH ZOMATO VERIFICATION REQUEST */
   function renderInboxScreen() {
     return (
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         <h1 style={{ fontSize: '24px', fontWeight: 600, color: colors.ink, margin: 0 }}>
           Inbox
         </h1>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', padding: '32px 0' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: 600, color: colors.ink, margin: 0 }}>
-            Nothing waiting
+
+        {/* Zomato Incoming Request Card */}
+        <div style={{ marginTop: '16px' }}>
+          <Panel>
+            <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '8px',
+                    backgroundColor: colors.zomato,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#FFFFFF',
+                    fontWeight: 800,
+                    fontSize: '18px'
+                  }}>
+                    Z
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '15px', fontWeight: 600, color: colors.ink }}>
+                      Zomato Partner Onboarding
+                    </div>
+                    <div style={{ fontSize: '12px', color: colors.muted }}>
+                      Verification Request · 5 mins ago
+                    </div>
+                  </div>
+                </div>
+                <span style={{
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  padding: '3px 8px',
+                  borderRadius: '6px',
+                  backgroundColor: zomatoVerified ? colors.okTint : colors.zomatoTint,
+                  color: zomatoVerified ? colors.ok : colors.zomato
+                }}>
+                  {zomatoVerified ? 'Verified' : 'Action Required'}
+                </span>
+              </div>
+
+              <div style={{ fontSize: '14px', color: colors.ink, lineHeight: 1.5 }}>
+                {zomatoVerified
+                  ? 'Your reputation credentials have been successfully verified! You are fast-tracked into Zomato Gold Fleet with zero probation.'
+                  : 'Zomato is requesting verification of your delivery track record and government skill certificate to fast-track your partner onboarding.'}
+              </div>
+
+              <div style={{
+                backgroundColor: colors.bg,
+                padding: '10px 12px',
+                borderRadius: '8px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px'
+              }}>
+                <div style={{ fontSize: '12px', color: colors.muted, fontWeight: 500 }}>Requested Credentials:</div>
+                <div style={{ fontSize: '12px', color: colors.ink, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Dot on={true} /> Swiggy Delivery Reputation (3,240 deliveries)
+                </div>
+                <div style={{ fontSize: '12px', color: colors.ink, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Dot on={true} /> NSDC Two-Wheeler Level 2 Certificate
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
+                <Button
+                  label={zomatoVerified ? "View Verification Report" : "Verify for Zomato"}
+                  variant={zomatoVerified ? "secondary" : "zomato"}
+                  size="sm"
+                  onClick={() => {
+                    setVerifyScenario('verified');
+                    setZomatoVerified(true);
+                    setTab('verify');
+                  }}
+                />
+              </div>
+            </div>
+          </Panel>
+        </div>
+
+        {/* Additional empty state explanation */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', padding: '24px 0' }}>
+          <h2 style={{ fontSize: '15px', fontWeight: 600, color: colors.muted, margin: 0 }}>
+            No other pending requests
           </h2>
-          <p style={{ fontSize: '14px', color: colors.muted, margin: 0 }}>
-            When Swiggy, Uber or a skills authority sends you a credential, it will appear here for you to accept.
+          <p style={{ fontSize: '13px', color: colors.muted, margin: 0 }}>
+            Incoming credential transfers and platform verification audits will show up here.
           </p>
         </div>
       </div>
@@ -739,8 +936,8 @@ export default function App() {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <button
-              onClick={() => setTab('wallet')}
-              aria-label="Back to wallet"
+              onClick={() => setTab('inbox')}
+              aria-label="Back to inbox"
               style={{
                 width: '36px',
                 height: '36px',
@@ -759,8 +956,9 @@ export default function App() {
             </button>
             <Brand suffix="Verifier" />
           </div>
-          <div style={{ fontSize: '13px', fontWeight: 600, color: colors.brand }}>
-            Zomato Partner Onboarding
+          <div style={{ fontSize: '13px', fontWeight: 600, color: colors.zomato, display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: colors.zomato }} />
+            Zomato Onboarding
           </div>
         </div>
 
@@ -824,7 +1022,7 @@ export default function App() {
             />
             <div style={{ fontSize: '13px', color: colors.muted, marginTop: '4px' }}>
               {isOk
-                ? 'All four checks passed in 1.4 seconds.'
+                ? 'All four cryptographic checks passed in 1.4 seconds.'
                 : isUberRevoked
                 ? 'One credential was revoked by the issuing authority.'
                 : 'One credential was changed after the issuer signed it.'}
@@ -853,11 +1051,11 @@ export default function App() {
                   alignItems: 'center',
                   gap: '8px'
                 }}>
-                  <Status kind="ok" label="Marked for fast-track onboarding" />
+                  <Status kind="ok" label="Fast-track onboarding approved!" />
                 </div>
               ) : (
                 <Button
-                  label={isOk ? 'Fast-track as Gold Partner' : 'Reject and scan again'}
+                  label={isOk ? 'Fast-track as Zomato Gold Partner' : 'Reject and scan again'}
                   variant={isOk ? 'primary' : 'danger'}
                   onClick={() => (isOk ? setDecided(true) : setTab('wallet'))}
                 />
@@ -865,7 +1063,7 @@ export default function App() {
             </div>
 
             <div style={{ fontSize: '12px', color: colors.muted, marginTop: '12px', lineHeight: 1.4 }}>
-              Without this wallet, the worker would start at Standard tier with no history.
+              Without this wallet, the worker would start at Standard probationary tier with 0 reputation.
             </div>
           </div>
 
