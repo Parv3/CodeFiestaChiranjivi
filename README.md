@@ -1,3 +1,12 @@
+# Portable Worker Reputation and Credential Wallet Across Gig Platforms
+
+This repository contains the architecture, specifications, and code for a decentralized worker reputation wallet using W3C Verifiable Credentials and DID-based issuer identification.
+
+For the comprehensive system design, credential schemas, cryptographic workflows, and verification guides, see:
+- [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md)
+
+---
+
 # Repository Guidelines and Collaboration Rules
 
 Welcome to the CodeFiesta repository. All contributors and team members must follow the rules below to maintain code quality, avoid merge conflicts, and ensure smooth collaboration throughout the hackathon.
