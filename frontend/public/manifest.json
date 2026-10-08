@@ -1,0 +1,19 @@
+{
+  "name": "GigPass - Portable Worker Reputation Wallet",
+  "short_name": "GigPass",
+  "description": "Decentralized reputation and credential wallet for gig delivery partners and drivers",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0d0f15",
+  "theme_color": "#0d0f15",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "finance", "productivity"]
+}
