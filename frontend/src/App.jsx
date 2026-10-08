@@ -14,18 +14,19 @@ import {
   Check,
   Eye,
   FileCode,
-  Download,
+  Copy,
   Users,
   Clock,
   Wifi,
   BatteryCharging,
-  ChevronRight,
-  ExternalLink,
   Globe,
   Award,
-  BadgeCheck,
   ArrowRight,
-  Sparkles
+  ExternalLink,
+  ShieldAlert,
+  ChevronRight,
+  Lock,
+  RefreshCw
 } from 'lucide-react';
 
 // Indian Gig Worker Personas
@@ -97,7 +98,7 @@ const PERSONAS = {
         platformId: 'nsdc',
         platformName: 'Skill India / NSDC',
         partnerId: 'NSDC-IND-7729',
-        brandColor: '#1e3a8a',
+        brandColor: '#2563eb',
         badgeTitle: 'Govt Certified Rider (L2)',
         badgeTitleHi: 'सरकारी प्रमाणित राइडर',
         issuanceDate: '10 Jan 2026',
@@ -157,7 +158,7 @@ const PERSONAS = {
 };
 
 export default function App() {
-  const [lang, setLang] = useState('en'); // 'en' or 'hi'
+  const [lang, setLang] = useState('en');
   const [activeTab, setActiveTab] = useState('demo');
   const [currentPersonaId, setCurrentPersonaId] = useState('ramesh');
   const [selectedForDisclosure, setSelectedForDisclosure] = useState(
@@ -170,10 +171,23 @@ export default function App() {
   const [inspectedCred, setInspectedCred] = useState(null);
   const [qrModalOpen, setQrModalOpen] = useState(false);
   const [qrSecondsLeft, setQrSecondsLeft] = useState(45);
+  const [copiedProof, setCopiedProof] = useState(false);
 
   const persona = PERSONAS[currentPersonaId] || PERSONAS.ramesh;
   const userCredentials = persona.credentials;
   const disclosedCredentials = userCredentials.filter(c => selectedForDisclosure.has(c.id));
+
+  // Accessibility (UI/UX Pro Max Priority 1): Keyboard Escape listener to close modals
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setQrModalOpen(false);
+        setInspectedCred(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Countdown timer for QR expiration simulation
   useEffect(() => {
@@ -282,7 +296,7 @@ export default function App() {
         ]
       });
       setVerifying(false);
-    }, 850);
+    }, 800);
   };
 
   const toggleRevoke = (id) => {
@@ -294,12 +308,20 @@ export default function App() {
     });
   };
 
+  const copyProofToClipboard = () => {
+    if (inspectedCred) {
+      navigator.clipboard.writeText(JSON.stringify(inspectedCred, null, 2));
+      setCopiedProof(true);
+      setTimeout(() => setCopiedProof(false), 2000);
+    }
+  };
+
   return (
-    <div style={{ minHeight: '100vh', background: '#0b0d13', color: '#f1f5f9', paddingBottom: '60px' }}>
-      {/* Real-World App Header */}
+    <div style={{ minHeight: '100vh', background: 'var(--bg-app)', color: 'var(--text-primary)', paddingBottom: '60px' }}>
+      {/* Top Application Header */}
       <header style={{
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
-        background: '#131620',
+        borderBottom: '1px solid var(--border-subtle)',
+        background: 'var(--bg-surface)',
         position: 'sticky',
         top: 0,
         zIndex: 50,
@@ -307,10 +329,10 @@ export default function App() {
       }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           {/* Logo & Platform Info */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{
-              width: '36px',
-              height: '36px',
+              width: '40px',
+              height: '40px',
               borderRadius: '8px',
               background: '#2563eb',
               display: 'flex',
@@ -320,46 +342,56 @@ export default function App() {
               fontWeight: 800,
               fontSize: '18px'
             }}>
-              G
+              <ShieldCheck size={24} />
             </div>
             <div style={{ textAlign: 'left' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ fontSize: '16px', fontWeight: 800, color: '#fff', letterSpacing: '-0.3px' }}>GigPass</span>
-                <span style={{ fontSize: '10px', background: 'rgba(37,99,235,0.15)', color: '#60a5fa', padding: '1px 6px', borderRadius: '4px', fontWeight: 700, border: '1px solid rgba(37,99,235,0.3)' }}>
-                  PWA v1.0
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '17px', fontWeight: 800, color: '#fff', letterSpacing: '-0.3px' }}>GigPass</span>
+                <span style={{ fontSize: '11px', background: 'rgba(37,99,235,0.15)', color: '#60a5fa', padding: '2px 8px', borderRadius: '4px', fontWeight: 700, border: '1px solid rgba(37,99,235,0.3)' }}>
+                  W3C VC &bull; PWA
                 </span>
               </div>
-              <p style={{ fontSize: '11px', color: '#94a3b8', margin: 0 }}>
-                {lang === 'hi' ? 'गिग वर्कर प्रतिष्ठा वॉलेट' : 'Worker Reputation & Credential Wallet'}
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>
+                {lang === 'hi' ? 'गिग वर्कर प्रतिष्ठा वॉलेट' : 'Decentralized Worker Reputation Wallet'}
               </p>
             </div>
           </div>
 
-          {/* Right Controls: Language & Persona Switcher */}
+          {/* Right Controls: Persona Switcher, Language & Tab Navigation */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            {/* Language Toggle */}
+            {/* Language Switcher */}
             <button
               onClick={() => setLang(lang === 'en' ? 'hi' : 'en')}
+              aria-label="Toggle language between English and Hindi"
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '4px',
-                padding: '5px 10px',
-                borderRadius: '6px',
+                gap: '6px',
+                padding: '6px 12px',
+                borderRadius: '8px',
                 background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                color: '#cbd5e1',
-                fontSize: '12px',
+                border: '1px solid var(--border-subtle)',
+                color: 'var(--text-secondary)',
+                fontSize: '13px',
                 fontWeight: 600
               }}
             >
-              <Globe size={13} /> {lang === 'en' ? 'हिन्दी' : 'English'}
+              <Globe size={14} /> {lang === 'en' ? 'हिन्दी' : 'English'}
             </button>
 
-            {/* Persona Switcher */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.05)', padding: '5px 10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>
-              <Users size={13} color="#94a3b8" />
+            {/* Persona Switcher Dropdown */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: 'rgba(255,255,255,0.05)',
+              padding: '6px 12px',
+              borderRadius: '8px',
+              border: '1px solid var(--border-subtle)'
+            }}>
+              <Users size={14} color="var(--text-muted)" />
               <select
+                aria-label="Select worker persona for demonstration"
                 value={currentPersonaId}
                 onChange={(e) => {
                   setCurrentPersonaId(e.target.value);
@@ -374,19 +406,19 @@ export default function App() {
                   background: 'transparent',
                   color: '#fff',
                   border: 'none',
-                  fontSize: '12px',
+                  fontSize: '13px',
                   fontWeight: 600,
                   outline: 'none',
                   cursor: 'pointer'
                 }}
               >
-                <option value="ramesh" style={{ background: '#131620' }}>Ramesh (Gold Pro - 4.9★)</option>
-                <option value="anita" style={{ background: '#131620' }}>Anita (Junior - 160 Orders)</option>
+                <option value="ramesh" style={{ background: '#10131d' }}>Ramesh (Gold Pro &bull; 4.9★)</option>
+                <option value="anita" style={{ background: '#10131d' }}>Anita (Junior &bull; 160 Orders)</option>
               </select>
             </div>
 
             {/* Mode Switcher */}
-            <div style={{ display: 'flex', gap: '3px', background: '#0b0d13', padding: '3px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <nav aria-label="Main view switcher" style={{ display: 'flex', gap: '4px', background: 'var(--bg-app)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
               {[
                 { id: 'demo', label: 'Split Demo', icon: Layers },
                 { id: 'wallet', label: 'Mobile PWA', icon: Smartphone },
@@ -399,36 +431,38 @@ export default function App() {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
+                    aria-label={`Switch to ${tab.label} view`}
+                    aria-pressed={active}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '5px',
-                      padding: '5px 10px',
+                      gap: '6px',
+                      padding: '6px 12px',
                       borderRadius: '6px',
-                      fontSize: '12px',
+                      fontSize: '13px',
                       fontWeight: 600,
                       background: active ? '#2563eb' : 'transparent',
-                      color: active ? '#fff' : '#94a3b8'
+                      color: active ? '#fff' : 'var(--text-muted)'
                     }}
                   >
-                    <Icon size={13} /> {tab.label}
+                    <Icon size={14} /> {tab.label}
                   </button>
                 );
               })}
-            </div>
+            </nav>
           </div>
         </div>
       </header>
 
-      {/* Main App Content */}
+      {/* Main App Content Area */}
       <main style={{ maxWidth: '1280px', margin: '24px auto 0', padding: '0 20px' }}>
         {/* VIEW 1: DUAL SCREEN HACKATHON DEMO */}
         {activeTab === 'demo' && (
           <div>
             {/* Operational Banner */}
             <div style={{
-              background: '#131620',
-              border: '1px solid rgba(255,255,255,0.08)',
+              background: 'var(--bg-surface)',
+              border: '1px solid var(--border-subtle)',
               borderRadius: '12px',
               padding: '12px 18px',
               marginBottom: '24px',
@@ -437,14 +471,14 @@ export default function App() {
               justifyContent: 'space-between'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }}></span>
-                <span style={{ fontSize: '13px', fontWeight: 600, color: '#cbd5e1' }}>
+                <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--color-success)' }}></span>
+                <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>
                   {lang === 'hi'
                     ? 'लाइव पोर्टेबल प्रतिष्ठा प्रदर्शन: वर्कर का फोन (बाएं) और प्लेटफॉर्म ऑनबोर्डिंग डेस्क (दाएं)'
                     : 'Live Portable Reputation Demo: Worker PWA (Left) & Platform Onboarding Desk (Right)'}
                 </span>
               </div>
-              <span style={{ fontSize: '12px', color: '#64748b', fontFamily: 'monospace' }}>
+              <span style={{ fontSize: '12px', color: 'var(--text-dim)', fontFamily: 'monospace' }}>
                 W3C DID: did:key Ed25519
               </span>
             </div>
@@ -474,33 +508,43 @@ export default function App() {
 
       {/* MODAL 1: FULLSCREEN PRESENTATION QR MODAL */}
       {qrModalOpen && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'rgba(0,0,0,0.85)',
-          backdropFilter: 'blur(8px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 100,
-          padding: '20px'
-        }}>
-          <div style={{
-            background: '#131620',
-            border: '1px solid rgba(255,255,255,0.12)',
-            borderRadius: '20px',
-            maxWidth: '380px',
-            width: '100%',
-            padding: '24px',
-            textAlign: 'center'
-          }}>
-            <h3 style={{ fontSize: '17px', fontWeight: 800, margin: '0 0 4px', color: '#fff' }}>
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="qr-modal-title"
+          onClick={() => setQrModalOpen(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.85)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 100,
+            padding: '20px'
+          }}
+        >
+          <div
+            className="modal-animate"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: 'var(--bg-surface)',
+              border: '1px solid var(--border-medium)',
+              borderRadius: '20px',
+              maxWidth: '380px',
+              width: '100%',
+              padding: '24px',
+              textAlign: 'center'
+            }}
+          >
+            <h3 id="qr-modal-title" style={{ fontSize: '18px', fontWeight: 800, margin: '0 0 4px', color: '#fff' }}>
               {lang === 'hi' ? 'ऑनबोर्डिंग सत्यापन QR कोड' : 'Onboarding Presentation QR'}
             </h3>
-            <p style={{ fontSize: '12px', color: '#94a3b8', margin: '0 0 18px' }}>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 18px' }}>
               {lang === 'hi'
                 ? 'नया नियोक्ता इस QR कोड को स्कैन करके प्रतिष्ठा सत्यापित कर सकता है'
-                : 'Show this QR to the onboarding desk at Zomato / Porter'}
+                : 'Present this QR code to the onboarding desk at Zomato / Porter'}
             </p>
 
             <div style={{
@@ -518,94 +562,135 @@ export default function App() {
               />
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '12px', color: '#10b981', fontWeight: 600 }}>
-              <Clock size={13} />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '12px', color: 'var(--color-success)', fontWeight: 600 }}>
+              <Clock size={14} />
               <span>{lang === 'hi' ? `सुरक्षा टाइमर: ${qrSecondsLeft}s में ताज़ा` : `Refreshes in ${qrSecondsLeft}s for security`}</span>
             </div>
 
-            <p style={{ fontSize: '11px', color: '#64748b', margin: '12px 0 20px' }}>
-              Includes {disclosedCredentials.length} cryptographically signed credentials.
+            <p style={{ fontSize: '11px', color: 'var(--text-dim)', margin: '12px 0 20px' }}>
+              Includes {disclosedCredentials.length} cryptographically signed credentials. Press Esc to close.
             </p>
 
             <button
               onClick={() => setQrModalOpen(false)}
+              aria-label="Close QR presentation modal"
               style={{
                 width: '100%',
-                padding: '10px',
+                padding: '12px',
                 borderRadius: '8px',
                 background: '#2563eb',
                 color: '#fff',
-                fontSize: '13px',
+                fontSize: '14px',
                 fontWeight: 700
               }}
             >
-              {lang === 'hi' ? 'बंद करें' : 'Close QR'}
+              {lang === 'hi' ? 'बंद करें' : 'Close QR Code'}
             </button>
           </div>
         </div>
       )}
 
-      {/* MODAL 2: RAW W3C PROOF INSPECTOR */}
+      {/* MODAL 2: RAW W3C PROOF INSPECTOR (UI/UX Pro Max Priority 1 & 8) */}
       {inspectedCred && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'rgba(0,0,0,0.85)',
-          backdropFilter: 'blur(8px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 100,
-          padding: '20px'
-        }}>
-          <div style={{
-            background: '#131620',
-            border: '1px solid rgba(255,255,255,0.12)',
-            borderRadius: '16px',
-            maxWidth: '560px',
-            width: '100%',
-            maxHeight: '90vh',
-            overflowY: 'auto',
-            padding: '20px',
-            textAlign: 'left'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="proof-modal-title"
+          onClick={() => setInspectedCred(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.85)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 100,
+            padding: '20px'
+          }}
+        >
+          <div
+            className="modal-animate"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: 'var(--bg-surface)',
+              border: '1px solid var(--border-medium)',
+              borderRadius: '16px',
+              maxWidth: '600px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              padding: '24px',
+              textAlign: 'left'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <FileCode size={18} color="#2563eb" />
-                <h3 style={{ fontSize: '15px', fontWeight: 700, margin: 0, color: '#fff' }}>
+                <FileCode size={20} color="#2563eb" />
+                <h3 id="proof-modal-title" style={{ fontSize: '16px', fontWeight: 700, margin: 0, color: '#fff' }}>
                   W3C Verifiable Credential Structure
                 </h3>
               </div>
               <button
                 onClick={() => setInspectedCred(null)}
-                style={{ background: 'transparent', border: 'none', color: '#94a3b8', fontSize: '20px', cursor: 'pointer' }}
+                aria-label="Close proof inspection dialog"
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--text-muted)',
+                  fontSize: '22px',
+                  cursor: 'pointer',
+                  padding: '4px 8px'
+                }}
               >
                 &times;
               </button>
             </div>
 
             <div style={{
-              background: '#090b10',
-              padding: '14px',
+              background: 'var(--bg-surface-sunken)',
+              padding: '16px',
               borderRadius: '10px',
               fontFamily: 'monospace',
               fontSize: '11px',
               color: '#38bdf8',
               overflowX: 'auto',
-              border: '1px solid rgba(255,255,255,0.06)'
+              border: '1px solid var(--border-subtle)',
+              marginBottom: '16px'
             }}>
               <pre>{JSON.stringify(inspectedCred, null, 2)}</pre>
             </div>
 
-            <div style={{ marginTop: '14px', display: 'flex', justifyContent: 'flex-end' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <button
+                onClick={copyProofToClipboard}
+                aria-label="Copy canonical JSON to clipboard"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 14px',
+                  borderRadius: '6px',
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid var(--border-subtle)',
+                  color: 'var(--text-secondary)',
+                  fontSize: '12px',
+                  fontWeight: 600
+                }}
+              >
+                {copiedProof ? <Check size={14} color="var(--color-success)" /> : <Copy size={14} />}
+                {copiedProof ? 'Copied to Clipboard!' : 'Copy Raw JSON'}
+              </button>
+
               <button
                 onClick={() => setInspectedCred(null)}
+                aria-label="Close dialog"
                 style={{
-                  padding: '7px 14px',
+                  padding: '8px 16px',
                   borderRadius: '6px',
                   background: '#2563eb',
                   color: '#fff',
-                  fontSize: '12px',
+                  fontSize: '13px',
                   fontWeight: 600
                 }}
               >
@@ -618,11 +703,11 @@ export default function App() {
     </div>
   );
 
-  /* SUB-RENDERER: PHONE PWA SHELL */
+  /* SUB-RENDERER: PHONE PWA SHELL (UI/UX Pro Max Priority 2 & 5) */
   function renderPhonePWA() {
     return (
       <div style={{
-        background: '#12141e',
+        background: 'var(--bg-surface)',
         borderRadius: '32px',
         border: '6px solid #202434',
         boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
@@ -631,14 +716,14 @@ export default function App() {
         {/* Realistic Mobile Status Bar */}
         <div style={{
           height: '28px',
-          background: '#12141e',
+          background: 'var(--bg-surface)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '0 18px',
           fontSize: '11px',
           fontWeight: 600,
-          color: '#94a3b8'
+          color: 'var(--text-muted)'
         }}>
           <span>12:45 IST</span>
           <div style={{ width: '60px', height: '4px', background: '#202434', borderRadius: '4px' }}></div>
@@ -650,10 +735,10 @@ export default function App() {
 
         {/* Phone Body */}
         <div style={{ padding: '16px' }}>
-          {/* Worker Identity Card (DigiLocker / Indian Gig Style) */}
+          {/* Worker Identity Card */}
           <div style={{
-            background: '#181b28',
-            border: '1px solid rgba(255,255,255,0.08)',
+            background: 'var(--bg-surface-elevated)',
+            border: '1px solid var(--border-subtle)',
             borderRadius: '16px',
             padding: '16px',
             marginBottom: '16px',
@@ -679,7 +764,7 @@ export default function App() {
                   <h3 style={{ fontSize: '15px', fontWeight: 800, margin: 0, color: '#fff' }}>
                     {lang === 'hi' ? persona.nameHi : persona.name}
                   </h3>
-                  <p style={{ fontSize: '11px', color: '#94a3b8', margin: '1px 0 0' }}>
+                  <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '1px 0 0' }}>
                     {lang === 'hi' ? persona.roleHi : persona.role} &bull; {persona.city}
                   </p>
                 </div>
@@ -687,7 +772,7 @@ export default function App() {
 
               <span style={{
                 background: 'rgba(16,185,129,0.1)',
-                color: '#10b981',
+                color: 'var(--color-success)',
                 border: '1px solid rgba(16,185,129,0.25)',
                 fontSize: '10px',
                 fontWeight: 700,
@@ -703,13 +788,13 @@ export default function App() {
               display: 'grid',
               gridTemplateColumns: 'repeat(3, 1fr)',
               gap: '6px',
-              background: '#0d0f16',
+              background: 'var(--bg-surface-sunken)',
               padding: '10px',
               borderRadius: '10px',
               textAlign: 'center'
             }}>
               <div>
-                <div style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase' }}>
+                <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
                   {lang === 'hi' ? 'रेटिंग' : 'Rating'}
                 </div>
                 <div style={{ fontSize: '15px', fontWeight: 800, color: '#fbbf24', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px' }}>
@@ -718,7 +803,7 @@ export default function App() {
               </div>
 
               <div>
-                <div style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase' }}>
+                <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
                   {lang === 'hi' ? 'कुल कार्य' : 'Total Tasks'}
                 </div>
                 <div style={{ fontSize: '15px', fontWeight: 800, color: '#fff' }}>
@@ -727,10 +812,10 @@ export default function App() {
               </div>
 
               <div>
-                <div style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase' }}>
+                <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
                   {lang === 'hi' ? 'प्रमाणित' : 'Passes'}
                 </div>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: '#34d399', marginTop: '2px' }}>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-success)', marginTop: '2px' }}>
                   {disclosedCredentials.length} VCs
                 </div>
               </div>
@@ -740,7 +825,7 @@ export default function App() {
           {/* Selective Disclosure Credentials List */}
           <div style={{ textAlign: 'left', marginBottom: '16px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <span style={{ fontSize: '12px', fontWeight: 700, color: '#cbd5e1' }}>
+              <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)' }}>
                 {lang === 'hi' ? 'सत्यापित साख पत्र (प्रकटीकरण चुनें)' : 'Verified Credentials (Select to Disclose)'}
               </span>
               <span style={{ fontSize: '11px', color: '#2563eb', fontWeight: 600 }}>
@@ -756,8 +841,8 @@ export default function App() {
                   <div
                     key={c.id}
                     style={{
-                      background: '#181b28',
-                      border: isRevoked ? '2px solid #ef4444' : isSelected ? '1px solid rgba(37,99,235,0.4)' : '1px solid rgba(255,255,255,0.06)',
+                      background: 'var(--bg-surface-elevated)',
+                      border: isRevoked ? '2px solid var(--color-danger)' : isSelected ? '1px solid rgba(37,99,235,0.4)' : '1px solid var(--border-subtle)',
                       borderRadius: '12px',
                       padding: '12px',
                       opacity: isSelected ? 1 : 0.5,
@@ -766,13 +851,16 @@ export default function App() {
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        {/* Custom Disclosure Checkbox */}
+                        {/* Accessible Touch Checkbox (UI/UX Pro Max Priority 1 & 2) */}
                         <button
                           onClick={() => toggleDisclosure(c.id)}
+                          aria-label={`Toggle selective disclosure for ${c.platformName}`}
+                          aria-checked={isSelected}
                           style={{
-                            width: '20px',
-                            height: '20px',
-                            borderRadius: '5px',
+                            width: '28px',
+                            height: '28px',
+                            minHeight: '28px',
+                            borderRadius: '6px',
                             border: isSelected ? 'none' : '1px solid rgba(255,255,255,0.3)',
                             background: isSelected ? '#2563eb' : 'transparent',
                             color: '#fff',
@@ -782,7 +870,7 @@ export default function App() {
                             cursor: 'pointer'
                           }}
                         >
-                          {isSelected && <Check size={14} />}
+                          {isSelected && <Check size={16} />}
                         </button>
 
                         <div>
@@ -792,7 +880,7 @@ export default function App() {
                               {c.platformName}
                             </span>
                           </div>
-                          <span style={{ fontSize: '11px', color: '#94a3b8' }}>
+                          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                             ID: {c.partnerId} &bull; {lang === 'hi' ? c.badgeTitleHi : c.badgeTitle}
                           </span>
                         </div>
@@ -800,12 +888,14 @@ export default function App() {
 
                       <button
                         onClick={() => setInspectedCred(c)}
+                        aria-label={`Inspect cryptographic proof for ${c.platformName}`}
                         style={{
                           background: 'rgba(255,255,255,0.06)',
-                          color: '#cbd5e1',
+                          color: 'var(--text-secondary)',
                           fontSize: '11px',
-                          padding: '4px 8px',
-                          borderRadius: '5px',
+                          padding: '6px 10px',
+                          minHeight: '32px',
+                          borderRadius: '6px',
                           fontWeight: 600,
                           cursor: 'pointer'
                         }}
@@ -814,7 +904,7 @@ export default function App() {
                       </button>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '12px', marginTop: '8px', fontSize: '11px', color: '#cbd5e1', paddingLeft: '30px' }}>
+                    <div style={{ display: 'flex', gap: '12px', marginTop: '8px', fontSize: '11px', color: 'var(--text-secondary)', paddingLeft: '38px' }}>
                       {c.credentialSubject.lifetimeDeliveries && <span><strong>{c.credentialSubject.lifetimeDeliveries}</strong> Orders</span>}
                       {c.credentialSubject.completedTrips && <span><strong>{c.credentialSubject.completedTrips}</strong> Trips</span>}
                       {c.credentialSubject.averageRating && <span><strong>{c.credentialSubject.averageRating}★</strong> Rating</span>}
@@ -829,13 +919,14 @@ export default function App() {
           {/* Present QR Button */}
           <button
             onClick={() => setQrModalOpen(true)}
+            aria-label="Generate and display presentation QR code"
             style={{
               width: '100%',
               padding: '12px',
               borderRadius: '12px',
               background: '#2563eb',
               color: '#fff',
-              fontSize: '13px',
+              fontSize: '14px',
               fontWeight: 700,
               display: 'flex',
               alignItems: 'center',
@@ -845,7 +936,7 @@ export default function App() {
               cursor: 'pointer'
             }}
           >
-            <QrCode size={16} />
+            <QrCode size={18} />
             {lang === 'hi' ? 'सत्यापन के लिए QR दिखाएं' : 'Present Reputation QR Code'}
           </button>
         </div>
@@ -857,14 +948,14 @@ export default function App() {
   function renderVerifierDesk() {
     return (
       <div style={{
-        background: '#131620',
+        background: 'var(--bg-surface)',
         borderRadius: '20px',
-        border: '1px solid rgba(255,255,255,0.08)',
+        border: '1px solid var(--border-subtle)',
         padding: '24px',
         textAlign: 'left'
       }}>
         {/* Terminal Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '16px', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '16px', marginBottom: '20px' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Building2 size={18} color="#2563eb" />
@@ -872,7 +963,7 @@ export default function App() {
                 Zomato / Porter Fleet Onboarding Terminal
               </h3>
             </div>
-            <p style={{ fontSize: '12px', color: '#94a3b8', margin: '2px 0 0' }}>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '2px 0 0' }}>
               Enterprise W3C Decentralized Credential Scanner
             </p>
           </div>
@@ -884,22 +975,23 @@ export default function App() {
                 setTamperMode(!tamperMode);
                 setVerificationResult(null);
               }}
+              aria-label="Simulate forged or altered credential payload"
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '5px',
-                padding: '6px 12px',
+                gap: '6px',
+                padding: '8px 12px',
                 borderRadius: '6px',
                 border: '1px solid',
-                borderColor: tamperMode ? '#ef4444' : 'rgba(255,255,255,0.12)',
+                borderColor: tamperMode ? 'var(--color-danger)' : 'var(--border-subtle)',
                 background: tamperMode ? 'rgba(239,68,68,0.15)' : 'transparent',
-                color: tamperMode ? '#fca5a5' : '#94a3b8',
-                fontSize: '11px',
+                color: tamperMode ? '#fca5a5' : 'var(--text-muted)',
+                fontSize: '12px',
                 fontWeight: 600,
                 cursor: 'pointer'
               }}
             >
-              <AlertTriangle size={13} />
+              <AlertTriangle size={14} />
               {tamperMode ? 'Tamper Active (Altered 5.0★)' : 'Simulate Forgery'}
             </button>
 
@@ -907,20 +999,21 @@ export default function App() {
             <button
               onClick={handleVerify}
               disabled={verifying}
+              aria-label="Verify presented credential signatures and status"
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
-                padding: '7px 16px',
+                gap: '8px',
+                padding: '8px 16px',
                 borderRadius: '8px',
-                background: '#10b981',
+                background: 'var(--color-success)',
                 color: '#fff',
-                fontSize: '12px',
+                fontSize: '13px',
                 fontWeight: 700,
                 cursor: 'pointer'
               }}
             >
-              <ScanLine size={15} />
+              <ScanLine size={16} />
               {verifying ? 'Verifying...' : 'Scan & Verify QR'}
             </button>
           </div>
@@ -928,17 +1021,16 @@ export default function App() {
 
         {/* Loading Spinner */}
         {verifying && (
-          <div style={{ textAlign: 'center', padding: '36px 0' }}>
-            <div style={{
+          <div role="status" aria-live="polite" style={{ textAlign: 'center', padding: '36px 0' }}>
+            <div className="spin-slow" style={{
               display: 'inline-block',
               width: '32px',
               height: '32px',
               border: '3px solid rgba(37,99,235,0.2)',
               borderTopColor: '#2563eb',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite'
+              borderRadius: '50%'
             }} />
-            <p style={{ marginTop: '12px', fontSize: '13px', color: '#94a3b8' }}>
+            <p style={{ marginTop: '12px', fontSize: '13px', color: 'var(--text-muted)' }}>
               Executing Ed25519 cryptographic proof verification...
             </p>
           </div>
@@ -946,7 +1038,7 @@ export default function App() {
 
         {/* Verification Result Display */}
         {verificationResult && (
-          <div>
+          <div role="region" aria-live="polite">
             {/* SUCCESS STATE */}
             {verificationResult.valid ? (
               <div>
@@ -959,19 +1051,19 @@ export default function App() {
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <CheckCircle2 size={24} color="#10b981" />
+                      <CheckCircle2 size={24} color="var(--color-success)" />
                       <div>
-                        <h4 style={{ fontSize: '15px', fontWeight: 800, margin: 0, color: '#10b981' }}>
+                        <h4 style={{ fontSize: '15px', fontWeight: 800, margin: 0, color: 'var(--color-success)' }}>
                           Verified Gig Worker Identity
                         </h4>
-                        <p style={{ fontSize: '12px', color: '#cbd5e1', margin: '2px 0 0' }}>
+                        <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '2px 0 0' }}>
                           Candidate: {verificationResult.holderName} &bull; {verificationResult.holderDid.slice(0, 18)}...
                         </p>
                       </div>
                     </div>
 
                     <span style={{
-                      background: '#10b981',
+                      background: 'var(--color-success)',
                       color: '#064e3b',
                       fontSize: '11px',
                       fontWeight: 800,
@@ -987,13 +1079,13 @@ export default function App() {
                     display: 'grid',
                     gridTemplateColumns: 'repeat(3, 1fr)',
                     gap: '10px',
-                    background: '#0d0f16',
+                    background: 'var(--bg-surface-sunken)',
                     padding: '12px',
                     borderRadius: '10px',
                     marginBottom: '14px'
                   }}>
                     <div>
-                      <div style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase' }}>TOTAL TASKS</div>
+                      <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>TOTAL TASKS</div>
                       <div style={{ fontSize: '20px', fontWeight: 800, color: '#fff' }}>
                         {verificationResult.totalTasks.toLocaleString()}
                       </div>
@@ -1001,7 +1093,7 @@ export default function App() {
                     </div>
 
                     <div>
-                      <div style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase' }}>CROSS-PLATFORM RATING</div>
+                      <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>CROSS-PLATFORM RATING</div>
                       <div style={{ fontSize: '20px', fontWeight: 800, color: '#fbbf24' }}>
                         {verificationResult.compositeRating} &#9733;
                       </div>
@@ -1009,17 +1101,17 @@ export default function App() {
                     </div>
 
                     <div>
-                      <div style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase' }}>SECURITY DEPOSIT</div>
+                      <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>SECURITY DEPOSIT</div>
                       <div style={{ fontSize: '16px', fontWeight: 800, color: '#60a5fa', marginTop: '3px' }}>
                         {verificationResult.depositWaived}
                       </div>
-                      <div style={{ fontSize: '10px', color: '#94a3b8' }}>Based on Past Track Record</div>
+                      <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Based on Past Track Record</div>
                     </div>
                   </div>
 
                   {/* Decision Box */}
                   <div style={{
-                    background: '#1a1f2e',
+                    background: 'var(--bg-surface-elevated)',
                     border: '1px solid rgba(37,99,235,0.3)',
                     padding: '12px 16px',
                     borderRadius: '10px',
@@ -1042,7 +1134,7 @@ export default function App() {
                 </div>
 
                 {/* Audit trail */}
-                <h5 style={{ fontSize: '12px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px' }}>
+                <h5 style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '8px' }}>
                   Cryptographic Verification Trail
                 </h5>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -1056,8 +1148,8 @@ export default function App() {
                       borderRadius: '6px',
                       fontSize: '11px'
                     }}>
-                      <span style={{ color: '#cbd5e1' }}>{chk.name}</span>
-                      <span style={{ color: '#10b981', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>{chk.name}</span>
+                      <span style={{ color: 'var(--color-success)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <CheckCircle2 size={12} /> Verified
                       </span>
                     </div>
@@ -1073,9 +1165,9 @@ export default function App() {
                 padding: '18px'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-                  <XCircle size={26} color="#ef4444" />
+                  <XCircle size={26} color="var(--color-danger)" />
                   <div>
-                    <h4 style={{ fontSize: '15px', fontWeight: 800, margin: 0, color: '#ef4444' }}>
+                    <h4 style={{ fontSize: '15px', fontWeight: 800, margin: 0, color: 'var(--color-danger)' }}>
                       Verification Rejected: Cryptographic Integrity Failure
                     </h4>
                     <p style={{ fontSize: '12px', color: '#fca5a5', margin: '3px 0 0' }}>
@@ -1091,12 +1183,12 @@ export default function App() {
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       padding: '8px 12px',
-                      background: '#0d0f16',
+                      background: 'var(--bg-surface-sunken)',
                       borderRadius: '6px',
                       fontSize: '11px'
                     }}>
-                      <span style={{ color: chk.pass ? '#cbd5e1' : '#fca5a5' }}>{chk.name}</span>
-                      <span style={{ color: chk.pass ? '#10b981' : '#ef4444', fontWeight: 600 }}>
+                      <span style={{ color: chk.pass ? 'var(--text-secondary)' : '#fca5a5' }}>{chk.name}</span>
+                      <span style={{ color: chk.pass ? 'var(--color-success)' : 'var(--color-danger)', fontWeight: 600 }}>
                         {chk.pass ? 'Verified' : (chk.error || 'Failed')}
                       </span>
                     </div>
@@ -1108,7 +1200,7 @@ export default function App() {
         )}
 
         {!verificationResult && !verifying && (
-          <div style={{ textAlign: 'center', padding: '36px 0', color: '#64748b' }}>
+          <div style={{ textAlign: 'center', padding: '36px 0', color: 'var(--text-dim)' }}>
             <ScanLine size={32} style={{ margin: '0 auto 8px', opacity: 0.5 }} />
             <p style={{ fontSize: '13px' }}>Click "Scan & Verify QR" to inspect the presentation payload.</p>
           </div>
@@ -1125,52 +1217,53 @@ export default function App() {
           <h2 style={{ fontSize: '20px', fontWeight: 800, margin: '0 0 4px', color: '#fff' }}>
             Platform Issuance Portals
           </h2>
-          <p style={{ color: '#94a3b8', fontSize: '13px' }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>
             Platforms sign and issue verifiable credentials to workers. They can also revoke credentials on the central registry.
           </p>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
           {/* Swiggy */}
-          <div style={{ background: '#131620', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '16px', textAlign: 'left' }}>
+          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: '14px', padding: '16px', textAlign: 'left' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-              <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: '#fc8019', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, color: '#fff' }}>
+              <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: 'var(--brand-swiggy)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, color: '#fff' }}>
                 S
               </div>
               <div>
                 <h4 style={{ fontSize: '14px', fontWeight: 700, margin: 0, color: '#fff' }}>Swiggy Delivery Partner</h4>
-                <span style={{ fontSize: '10px', color: '#fc8019', fontFamily: 'monospace' }}>did:key:z6MkuwSwiggy...</span>
+                <span style={{ fontSize: '10px', color: 'var(--brand-swiggy)', fontFamily: 'monospace' }}>did:key:z6MkuwSwiggy...</span>
               </div>
             </div>
-            <p style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '14px' }}>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '14px' }}>
               Issues verifiable food & grocery delivery performance records (3,240 deliveries, 4.92★ rating).
             </p>
-            <div style={{ fontSize: '12px', color: '#10b981', fontWeight: 600 }}>Active in Wallet</div>
+            <div style={{ fontSize: '12px', color: 'var(--color-success)', fontWeight: 600 }}>Active in Wallet</div>
           </div>
 
           {/* Uber */}
-          <div style={{ background: '#131620', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '16px', textAlign: 'left' }}>
+          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: '14px', padding: '16px', textAlign: 'left' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
               <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: '#000', border: '1px solid #333', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, color: '#fff' }}>
                 U
               </div>
               <div>
                 <h4 style={{ fontSize: '14px', fontWeight: 700, margin: 0, color: '#fff' }}>Uber Mobility Fleet</h4>
-                <span style={{ fontSize: '10px', color: '#a1a1aa', fontFamily: 'monospace' }}>did:key:z6MkuwUber...</span>
+                <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>did:key:z6MkuwUber...</span>
               </div>
             </div>
-            <p style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '14px' }}>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '14px' }}>
               Issues rideshare records (1,420 trips, 4.88★, Diamond standing). Test revocation below:
             </p>
             <button
               onClick={() => toggleRevoke('urn:uuid:uber-rep-551029')}
+              aria-label="Toggle Uber credential revocation status"
               style={{
                 width: '100%',
                 padding: '8px',
                 borderRadius: '6px',
                 border: '1px solid',
-                borderColor: revokedIds.has('urn:uuid:uber-rep-551029') ? '#ef4444' : '#64748b',
-                background: revokedIds.has('urn:uuid:uber-rep-551029') ? '#ef4444' : 'rgba(255,255,255,0.04)',
+                borderColor: revokedIds.has('urn:uuid:uber-rep-551029') ? 'var(--color-danger)' : 'var(--text-dim)',
+                background: revokedIds.has('urn:uuid:uber-rep-551029') ? 'var(--color-danger)' : 'rgba(255,255,255,0.04)',
                 color: '#fff',
                 fontSize: '12px',
                 fontWeight: 600,
@@ -1182,9 +1275,9 @@ export default function App() {
           </div>
 
           {/* NSDC Skill India */}
-          <div style={{ background: '#131620', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '16px', textAlign: 'left' }}>
+          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: '14px', padding: '16px', textAlign: 'left' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-              <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: '#1e3a8a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, color: '#fff' }}>
+              <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: 'var(--brand-nsdc)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, color: '#fff' }}>
                 SI
               </div>
               <div>
@@ -1192,10 +1285,10 @@ export default function App() {
                 <span style={{ fontSize: '10px', color: '#60a5fa', fontFamily: 'monospace' }}>did:key:z6MkuwSkillIndia...</span>
               </div>
             </div>
-            <p style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '14px' }}>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '14px' }}>
               Issues government skill competency certification (Two-Wheeler Operations Level 2, Distinction).
             </p>
-            <div style={{ fontSize: '12px', color: '#10b981', fontWeight: 600 }}>Government Verified</div>
+            <div style={{ fontSize: '12px', color: 'var(--color-success)', fontWeight: 600 }}>Government Verified</div>
           </div>
         </div>
       </div>
