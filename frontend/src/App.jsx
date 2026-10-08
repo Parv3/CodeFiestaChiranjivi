@@ -1,1294 +1,985 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import {
-  ShieldCheck,
-  Smartphone,
-  Building2,
-  ScanLine,
-  CheckCircle2,
-  XCircle,
-  AlertTriangle,
-  QrCode,
-  Star,
-  Layers,
-  Check,
-  Eye,
-  FileCode,
-  Copy,
-  Users,
-  Clock,
-  Wifi,
-  BatteryCharging,
-  Globe,
-  Award,
-  ArrowRight,
-  ExternalLink,
-  ShieldAlert,
-  ChevronRight,
-  Lock,
-  RefreshCw
-} from 'lucide-react';
 
-// Indian Gig Worker Personas
-const PERSONAS = {
-  ramesh: {
-    id: 'ramesh',
-    name: 'Ramesh Kumar',
-    nameHi: 'रमेश कुमार',
-    role: 'Delivery & Mobility Partner',
-    roleHi: 'डिलीवरी और मोबिलिटी पार्टनर',
-    city: 'Bengaluru, KA',
-    did: 'did:key:z6MkrWorkerRamesh2026Ed25519Address',
-    avatar: 'RK',
-    joinedYear: '2023',
-    credentials: [
-      {
-        id: 'urn:uuid:swiggy-rep-982134',
-        type: ['VerifiableCredential', 'DeliveryReputationCredential'],
-        platformId: 'swiggy',
-        platformName: 'Swiggy Delivery Partner',
-        partnerId: 'SWG-BLR-9821',
-        brandColor: '#fc8019',
-        badgeTitle: 'Top Tier Partner',
-        badgeTitleHi: 'शीर्ष स्तरीय पार्टनर',
-        issuanceDate: '15 Mar 2026',
-        credentialSubject: {
-          platform: 'Swiggy',
-          lifetimeDeliveries: 3240,
-          averageRating: 4.92,
-          onTimeDeliveryRate: '98.4%',
-          tenureMonths: 26,
-          standing: 'Top Tier Partner'
-        },
-        proof: {
-          type: 'Ed25519Signature2020',
-          created: '2026-03-15T10:00:00Z',
-          verificationMethod: 'did:key:z6MkuwSwiggyDeliveryIssuerDid2026#key-1',
-          proofValue: 'z3mX9kSwiggyTamperproofEd25519ProofValueDemo987'
-        }
-      },
-      {
-        id: 'urn:uuid:uber-rep-551029',
-        type: ['VerifiableCredential', 'MobilityReputationCredential'],
-        platformId: 'uber',
-        platformName: 'Uber Driver Fleet',
-        partnerId: 'UBR-KA-5510',
-        brandColor: '#000000',
-        badgeTitle: 'Diamond Pro Driver',
-        badgeTitleHi: 'डायमंड प्रो ड्राइवर',
-        issuanceDate: '20 Mar 2026',
-        credentialSubject: {
-          platform: 'Uber',
-          completedTrips: 1420,
-          averageRating: 4.88,
-          safetyIncidentCount: 0,
-          tenureMonths: 14,
-          standing: 'Diamond Driver'
-        },
-        proof: {
-          type: 'Ed25519Signature2020',
-          created: '2026-03-20T14:30:00Z',
-          verificationMethod: 'did:key:z6MkuwUberDriverMobilityIssuerDid2026#key-1',
-          proofValue: 'z7pB2qUberMobilityTamperproofProofValueDemo441'
-        }
-      },
-      {
-        id: 'urn:uuid:nsdc-cert-118274',
-        type: ['VerifiableCredential', 'SkillCertificationCredential'],
-        platformId: 'nsdc',
-        platformName: 'Skill India / NSDC',
-        partnerId: 'NSDC-IND-7729',
-        brandColor: '#2563eb',
-        badgeTitle: 'Govt Certified Rider (L2)',
-        badgeTitleHi: 'सरकारी प्रमाणित राइडर',
-        issuanceDate: '10 Jan 2026',
-        credentialSubject: {
-          certifyingBody: 'National Skill Development Corporation',
-          qualification: 'Commercial Two-Wheeler Operations Level 2',
-          grade: 'Distinction',
-          verificationStatus: 'Government Verified'
-        },
-        proof: {
-          type: 'Ed25519Signature2020',
-          created: '2026-01-10T09:00:00Z',
-          verificationMethod: 'did:key:z6MkuwSkillIndiaGovtAuthorityDid2026#key-1',
-          proofValue: 'z9kL4rGovtSkillIndiaTamperproofProofValueDemo2026'
-        }
-      }
-    ]
-  },
-  anita: {
-    id: 'anita',
-    name: 'Anita Sharma',
-    nameHi: 'अनिता शर्मा',
-    role: 'Delivery Associate',
-    roleHi: 'डिलीवरी एसोसिएट',
-    city: 'New Delhi, DL',
-    did: 'did:key:z6MkrWorkerAnitaJunior2026Address',
-    avatar: 'AS',
-    joinedYear: '2026',
-    credentials: [
-      {
-        id: 'urn:uuid:swiggy-rep-110294',
-        type: ['VerifiableCredential', 'DeliveryReputationCredential'],
-        platformId: 'swiggy',
-        platformName: 'Swiggy Delivery Partner',
-        partnerId: 'SWG-DEL-1102',
-        brandColor: '#fc8019',
-        badgeTitle: 'Probationary Partner',
-        badgeTitleHi: 'प्रशिक्षु पार्टनर',
-        issuanceDate: '01 Mar 2026',
-        credentialSubject: {
-          platform: 'Swiggy',
-          lifetimeDeliveries: 160,
-          averageRating: 4.74,
-          onTimeDeliveryRate: '92.0%',
-          tenureMonths: 2,
-          standing: 'Probationary Partner'
-        },
-        proof: {
-          type: 'Ed25519Signature2020',
-          created: '2026-03-01T10:00:00Z',
-          verificationMethod: 'did:key:z6MkuwSwiggyDeliveryIssuerDid2026#key-1',
-          proofValue: 'z4mAnitaSwiggySignature992'
-        }
-      }
-    ]
+// Brand colors and tokens from gigwallet
+const colors = {
+  bg: '#F5F4F0',
+  surface: '#FFFFFF',
+  ink: '#1C1B19',
+  muted: '#6B675F',
+  line: '#E3E0D8',
+  lineStrong: '#CFCBC1',
+  brand: '#1B4D3E',
+  onBrand: '#FFFFFF',
+  ok: '#1B6B4F',
+  okTint: '#E4EEE9',
+  bad: '#B3261E',
+  badTint: '#FBEDEB',
+  avatar: '#ECEAE4',
+  star: '#E8B100',
+};
+
+// Five-point star SVG path
+const STAR_POINTS = Array.from({ length: 10 }, (_, i) => {
+  const r = i % 2 === 0 ? 14 : 5.9;
+  const a = -Math.PI / 2 + (i * Math.PI) / 5;
+  return `${(24 + r * Math.cos(a)).toFixed(2)},${(25 + r * Math.sin(a)).toFixed(2)}`;
+}).join(' ');
+
+function StarMark({ size = 28, bare = false }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" aria-label="GigWallet logo" style={{ display: 'block', flexShrink: 0 }}>
+      {!bare && <rect width="48" height="48" rx="11" fill={colors.brand} />}
+      <polygon points={STAR_POINTS} fill={colors.star} />
+    </svg>
+  );
+}
+
+function Brand({ suffix, size = 28 }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <StarMark size={size} />
+      <span style={{ fontWeight: 600, fontSize: '15px', color: colors.ink }}>GigWallet</span>
+      {suffix ? <span style={{ fontSize: '13px', color: colors.muted }}>{suffix}</span> : null}
+    </div>
+  );
+}
+
+// Minimal vector icons matching gigwallet/apps/wallet/src/components/Icon.tsx
+const ICONS = {
+  wallet: 'M3 7h18v12H3zM3 7l3-3h12v3M16 13h2',
+  inbox: 'M3 13l3-8h12l3 8v6H3zM3 13h5l1 2h6l1-2h5',
+  share: 'M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 18h2v2h-2z',
+  me: 'M12 12a4 4 0 100-8 4 4 0 000 8zM4 21a8 8 0 0116 0',
+  check: 'M5 12l5 5 9-10',
+  x: 'M6 6l12 12M18 6L6 18',
+  chevron: 'M9 6l6 6-6 6',
+  copy: 'M8 4v12a2 2 0 002 2h8a2 2 0 002-2V8l-6-6H10a2 2 0 00-2 2z M4 8v12a2 2 0 002 2h10',
+  shield: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'
+};
+
+function Icon({ name, size = 22, color = colors.ink, stroke = 1.75 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={stroke}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={{ display: 'inline-block', flexShrink: 0 }}
+    >
+      <path d={ICONS[name] || ICONS.wallet} />
+    </svg>
+  );
+}
+
+function Status({ kind, label, size = 'sm' }) {
+  const c = kind === 'ok' ? colors.ok : colors.bad;
+  const isLg = size === 'lg';
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: isLg ? '8px' : '4px' }}>
+      <Icon name={kind === 'ok' ? 'check' : 'x'} size={isLg ? 22 : 14} color={c} stroke={isLg ? 2.5 : 3} />
+      <span style={{
+        fontWeight: isLg ? 700 : 600,
+        fontSize: isLg ? '20px' : '13px',
+        color: c,
+        lineHeight: isLg ? '26px' : '19px'
+      }}>
+        {label}
+      </span>
+    </div>
+  );
+}
+
+function Dot({ on }) {
+  return (
+    <span
+      style={{
+        display: 'inline-block',
+        width: '6px',
+        height: '6px',
+        borderRadius: '3px',
+        backgroundColor: on ? colors.ok : colors.muted,
+        flexShrink: 0
+      }}
+    />
+  );
+}
+
+function Panel({ children, style }) {
+  return (
+    <div style={{
+      backgroundColor: colors.surface,
+      border: `1px solid ${colors.line}`,
+      borderRadius: '12px',
+      overflow: 'hidden',
+      ...style
+    }}>
+      {children}
+    </div>
+  );
+}
+
+function PanelRow({ children, borderBottom = true, style, onClick }) {
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        padding: '14px 16px',
+        borderBottom: borderBottom ? `1px solid ${colors.line}` : 'none',
+        display: 'flex',
+        alignItems: 'center',
+        cursor: onClick ? 'pointer' : 'default',
+        ...style
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function Button({ label, onClick, variant = 'primary', disabled = false, fullWidth = true }) {
+  const isSec = variant === 'secondary';
+  const isDanger = variant === 'danger';
+
+  let bg = colors.brand;
+  let fg = colors.onBrand;
+  let border = 'none';
+
+  if (isSec) {
+    bg = colors.surface;
+    fg = colors.ink;
+    border = `1px solid ${colors.lineStrong}`;
+  } else if (isDanger) {
+    bg = colors.bad;
+    fg = '#FFFFFF';
   }
+
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        width: fullWidth ? '100%' : 'auto',
+        height: isSec ? '48px' : '52px',
+        backgroundColor: bg,
+        color: fg,
+        border,
+        borderRadius: '12px',
+        fontWeight: 600,
+        fontSize: '15px',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        opacity: disabled ? 0.6 : 1,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '0 20px',
+        transition: 'all 0.1s ease',
+        boxShadow: isSec ? 'none' : '0 1px 2px rgba(0,0,0,0.05)'
+      }}
+    >
+      {label}
+    </button>
+  );
+}
+
+function shortDid(did) {
+  if (!did) return '';
+  if (did.length <= 24) return did;
+  return `${did.slice(0, 16)}...${did.slice(-8)}`;
+}
+
+// Initial worker data matching gigwallet mock service
+const INITIAL_SNAPSHOT = {
+  holderName: 'Ramesh Kumar',
+  did: 'did:key:z6MkrWorkerPublicKeyHexExampleW4pQ',
+  revocationCheckedAt: '2 hours ago',
+  reputation: {
+    rating: 4.91,
+    outOf: 5,
+    totalTasks: 4660,
+    safetyIncidents: 0,
+    tier: 'Gold'
+  },
+  credentials: [
+    {
+      id: 'swiggy',
+      initial: 'S',
+      title: 'Swiggy delivery partner',
+      subtitle: '4.92 rating · 3,240 deliveries',
+      status: 'valid'
+    },
+    {
+      id: 'uber',
+      initial: 'U',
+      title: 'Uber driver',
+      subtitle: '4.88 rating · 1,420 trips',
+      status: 'valid'
+    },
+    {
+      id: 'nsdc',
+      initial: 'N',
+      title: 'Two-Wheeler Operations, Level 2',
+      subtitle: 'Skill India (NSDC) · Distinction',
+      status: 'valid'
+    }
+  ]
 };
 
 export default function App() {
-  const [lang, setLang] = useState('en');
-  const [activeTab, setActiveTab] = useState('demo');
-  const [currentPersonaId, setCurrentPersonaId] = useState('ramesh');
-  const [selectedForDisclosure, setSelectedForDisclosure] = useState(
-    new Set(['urn:uuid:swiggy-rep-982134', 'urn:uuid:uber-rep-551029', 'urn:uuid:nsdc-cert-118274'])
-  );
-  const [revokedIds, setRevokedIds] = useState(new Set());
-  const [tamperMode, setTamperMode] = useState(false);
-  const [verifying, setVerifying] = useState(false);
-  const [verificationResult, setVerificationResult] = useState(null);
-  const [inspectedCred, setInspectedCred] = useState(null);
-  const [qrModalOpen, setQrModalOpen] = useState(false);
-  const [qrSecondsLeft, setQrSecondsLeft] = useState(45);
-  const [copiedProof, setCopiedProof] = useState(false);
+  const [tab, setTab] = useState('wallet'); // 'wallet' | 'inbox' | 'share' | 'me' | 'verify'
+  const [verifyScenario, setVerifyScenario] = useState('verified'); // 'verified' | 'rejected'
+  const [picked, setPicked] = useState(['swiggy', 'uber', 'nsdc']);
+  const [countdown, setCountdown] = useState(58);
+  const [copied, setCopied] = useState(false);
+  const [decided, setDecided] = useState(false);
+  const [revokedCreds, setRevokedCreds] = useState(new Set());
 
-  const persona = PERSONAS[currentPersonaId] || PERSONAS.ramesh;
-  const userCredentials = persona.credentials;
-  const disclosedCredentials = userCredentials.filter(c => selectedForDisclosure.has(c.id));
-
-  // Accessibility (UI/UX Pro Max Priority 1): Keyboard Escape listener to close modals
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        setQrModalOpen(false);
-        setInspectedCred(null);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  // Countdown timer for QR expiration simulation
+  // 60-second QR countdown loop
   useEffect(() => {
     const timer = setInterval(() => {
-      setQrSecondsLeft(prev => (prev <= 1 ? 45 : prev - 1));
+      setCountdown((c) => (c <= 1 ? 60 : c - 1));
     }, 1000);
     return () => clearInterval(timer);
   }, []);
 
-  // Compute composite metrics
-  const totalTasks = disclosedCredentials.reduce((sum, c) => {
-    return sum + (c.credentialSubject.lifetimeDeliveries || 0) + (c.credentialSubject.completedTrips || 0);
-  }, 0);
+  const togglePick = (id) => {
+    setPicked((prev) => {
+      if (prev.includes(id)) {
+        if (prev.length <= 1) return prev; // Keep at least one
+        return prev.filter((x) => x !== id);
+      }
+      return [...prev, id];
+    });
+  };
 
-  const ratingCreds = disclosedCredentials.filter(c => c.credentialSubject.averageRating);
-  const avgRating = ratingCreds.length > 0
-    ? (ratingCreds.reduce((sum, c) => sum + c.credentialSubject.averageRating, 0) / ratingCreds.length).toFixed(2)
-    : '0.00';
+  const copyDid = () => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(INITIAL_SNAPSHOT.did);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
-  const toggleDisclosure = (id) => {
-    setSelectedForDisclosure(prev => {
+  const toggleRevokeUber = () => {
+    setRevokedCreds((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) {
-        if (next.size > 1) next.delete(id);
+      if (next.has('uber')) {
+        next.delete('uber');
       } else {
-        next.add(id);
+        next.add('uber');
       }
       return next;
     });
   };
 
-  const buildPresentationPayload = () => {
-    let credsToPresent = JSON.parse(JSON.stringify(disclosedCredentials));
-    if (tamperMode && credsToPresent.length > 0) {
-      credsToPresent[0].credentialSubject.averageRating = 5.0;
-      credsToPresent[0].credentialSubject.tampered = true;
-    }
-
-    return {
-      '@context': ['https://www.w3.org/2018/credentials/v1'],
-      type: ['VerifiablePresentation'],
-      holder: persona.did,
-      verifiableCredential: credsToPresent,
-      proof: {
-        type: 'Ed25519Signature2020',
-        created: new Date().toISOString(),
-        verificationMethod: `${persona.did}#key-1`,
-        proofValue: 'zHolderSignedVPProof' + Date.now()
-      }
-    };
-  };
-
-  const handleVerify = () => {
-    setVerifying(true);
-    setVerificationResult(null);
-
-    setTimeout(() => {
-      if (tamperMode) {
-        setVerificationResult({
-          valid: false,
-          error: 'Signature Mismatch: Swiggy Credential payload was modified without valid issuer private key.',
-          checks: [
-            { name: 'Holder Presentation Signature (did:key)', pass: true },
-            { name: 'Swiggy Delivery Credential Proof', pass: false, error: 'Signature Mismatch (Data Tampered)' },
-            { name: 'Revocation Registry Check', pass: true }
-          ]
-        });
-        setVerifying(false);
-        return;
-      }
-
-      const revokedItem = disclosedCredentials.find(c => revokedIds.has(c.id));
-      if (revokedItem) {
-        setVerificationResult({
-          valid: false,
-          error: `Revocation Flag: Credential from ${revokedItem.platformName} was revoked on the central registry.`,
-          checks: [
-            { name: 'Holder Presentation Signature', pass: true },
-            { name: 'Issuer Signature Validity', pass: true },
-            { name: 'Revocation Registry Check', pass: false, error: 'Status: REVOKED by Platform Issuer' }
-          ]
-        });
-        setVerifying(false);
-        return;
-      }
-
-      const isGold = totalTasks >= 2000 && Number(avgRating) >= 4.85;
-      const isSilver = totalTasks >= 100;
-
-      setVerificationResult({
-        valid: true,
-        holderName: persona.name,
-        holderDid: persona.did,
-        totalTasks: totalTasks,
-        compositeRating: avgRating,
-        tier: isGold ? 'Gold Tier Partner (Fast-Tracked)' : isSilver ? 'Silver Tier (Standard Onboarding)' : 'Probationary Tier',
-        depositWaived: isGold ? '₹5,000 Waived' : '₹2,500 Standard',
-        probationWaived: isGold,
-        checks: [
-          { name: `Holder Presentation Signature (${persona.did.slice(0, 14)}...)`, pass: true },
-          ...disclosedCredentials.map(c => ({
-            name: `${c.platformName} (Ed25519)`,
-            pass: true
-          })),
-          { name: 'Revocation Registry Check (Active status)', pass: true }
-        ]
-      });
-      setVerifying(false);
-    }, 800);
-  };
-
-  const toggleRevoke = (id) => {
-    setRevokedIds(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
-  const copyProofToClipboard = () => {
-    if (inspectedCred) {
-      navigator.clipboard.writeText(JSON.stringify(inspectedCred, null, 2));
-      setCopiedProof(true);
-      setTimeout(() => setCopiedProof(false), 2000);
-    }
-  };
+  const isUberRevoked = revokedCreds.has('uber');
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-app)', color: 'var(--text-primary)', paddingBottom: '60px' }}>
-      {/* Top Application Header */}
-      <header style={{
-        borderBottom: '1px solid var(--border-subtle)',
-        background: 'var(--bg-surface)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 50,
-        padding: '12px 20px'
+    <div style={{
+      minHeight: '100vh',
+      backgroundColor: colors.bg,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center'
+    }}>
+      {/* Centered Phone Shell Container */}
+      <div style={{
+        width: '100%',
+        maxWidth: tab === 'verify' ? '820px' : '480px',
+        minHeight: '100vh',
+        backgroundColor: colors.bg,
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'relative'
       }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          {/* Logo & Platform Info */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '8px',
-              background: '#2563eb',
+        
+        {/* Main Scrollable Body */}
+        <div style={{
+          flex: 1,
+          padding: '24px 20px',
+          paddingBottom: tab === 'verify' ? '40px' : '100px'
+        }}>
+          {tab === 'wallet' && renderWalletScreen()}
+          {tab === 'share' && renderShareScreen()}
+          {tab === 'inbox' && renderInboxScreen()}
+          {tab === 'me' && renderMeScreen()}
+          {tab === 'verify' && renderVerifyScreen()}
+        </div>
+
+        {/* Pinned Bottom Navigation Tab Bar (hidden on standalone verifier inspect mode) */}
+        {tab !== 'verify' && (
+          <div style={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            display: 'flex',
+            justifyContent: 'center',
+            pointerEvents: 'none',
+            zIndex: 100
+          }}>
+            <nav style={{
+              width: '100%',
+              maxWidth: '480px',
+              backgroundColor: colors.surface,
+              borderTop: `1px solid ${colors.line}`,
               display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#fff',
-              fontWeight: 800,
-              fontSize: '18px'
+              pointerEvents: 'auto',
+              height: '64px',
+              paddingBottom: 'env(safe-area-inset-bottom, 0px)'
             }}>
-              <ShieldCheck size={24} />
-            </div>
-            <div style={{ textAlign: 'left' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '17px', fontWeight: 800, color: '#fff', letterSpacing: '-0.3px' }}>GigPass</span>
-                <span style={{ fontSize: '11px', background: 'rgba(37,99,235,0.15)', color: '#60a5fa', padding: '2px 8px', borderRadius: '4px', fontWeight: 700, border: '1px solid rgba(37,99,235,0.3)' }}>
-                  W3C VC &bull; PWA
-                </span>
-              </div>
-              <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>
-                {lang === 'hi' ? 'गिग वर्कर प्रतिष्ठा वॉलेट' : 'Decentralized Worker Reputation Wallet'}
-              </p>
-            </div>
-          </div>
-
-          {/* Right Controls: Persona Switcher, Language & Tab Navigation */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            {/* Language Switcher */}
-            <button
-              onClick={() => setLang(lang === 'en' ? 'hi' : 'en')}
-              aria-label="Toggle language between English and Hindi"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '6px 12px',
-                borderRadius: '8px',
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid var(--border-subtle)',
-                color: 'var(--text-secondary)',
-                fontSize: '13px',
-                fontWeight: 600
-              }}
-            >
-              <Globe size={14} /> {lang === 'en' ? 'हिन्दी' : 'English'}
-            </button>
-
-            {/* Persona Switcher Dropdown */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              background: 'rgba(255,255,255,0.05)',
-              padding: '6px 12px',
-              borderRadius: '8px',
-              border: '1px solid var(--border-subtle)'
-            }}>
-              <Users size={14} color="var(--text-muted)" />
-              <select
-                aria-label="Select worker persona for demonstration"
-                value={currentPersonaId}
-                onChange={(e) => {
-                  setCurrentPersonaId(e.target.value);
-                  setVerificationResult(null);
-                  if (e.target.value === 'ramesh') {
-                    setSelectedForDisclosure(new Set(['urn:uuid:swiggy-rep-982134', 'urn:uuid:uber-rep-551029', 'urn:uuid:nsdc-cert-118274']));
-                  } else {
-                    setSelectedForDisclosure(new Set(['urn:uuid:swiggy-rep-110294']));
-                  }
-                }}
-                style={{
-                  background: 'transparent',
-                  color: '#fff',
-                  border: 'none',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  outline: 'none',
-                  cursor: 'pointer'
-                }}
-              >
-                <option value="ramesh" style={{ background: '#10131d' }}>Ramesh (Gold Pro &bull; 4.9★)</option>
-                <option value="anita" style={{ background: '#10131d' }}>Anita (Junior &bull; 160 Orders)</option>
-              </select>
-            </div>
-
-            {/* Mode Switcher */}
-            <nav aria-label="Main view switcher" style={{ display: 'flex', gap: '4px', background: 'var(--bg-app)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
               {[
-                { id: 'demo', label: 'Split Demo', icon: Layers },
-                { id: 'wallet', label: 'Mobile PWA', icon: Smartphone },
-                { id: 'verifier', label: 'Verifier Desk', icon: ScanLine },
-                { id: 'issuers', label: 'Issuers', icon: Building2 }
-              ].map(tab => {
-                const Icon = tab.icon;
-                const active = activeTab === tab.id;
+                { id: 'wallet', label: 'Wallet', icon: 'wallet' },
+                { id: 'inbox', label: 'Inbox', icon: 'inbox' },
+                { id: 'share', label: 'Share', icon: 'share' },
+                { id: 'me', label: 'Me', icon: 'me' }
+              ].map((t) => {
+                const active = tab === t.id;
                 return (
                   <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    aria-label={`Switch to ${tab.label} view`}
-                    aria-pressed={active}
+                    key={t.id}
+                    onClick={() => setTab(t.id)}
+                    aria-label={t.label}
                     style={{
+                      flex: 1,
+                      border: 'none',
+                      backgroundColor: 'transparent',
                       display: 'flex',
+                      flexDirection: 'column',
                       alignItems: 'center',
-                      gap: '6px',
-                      padding: '6px 12px',
-                      borderRadius: '6px',
-                      fontSize: '13px',
-                      fontWeight: 600,
-                      background: active ? '#2563eb' : 'transparent',
-                      color: active ? '#fff' : 'var(--text-muted)'
+                      justifyContent: 'center',
+                      gap: '4px',
+                      cursor: 'pointer',
+                      color: active ? colors.brand : colors.muted
                     }}
                   >
-                    <Icon size={14} /> {tab.label}
+                    <Icon name={t.icon} size={20} color={active ? colors.brand : colors.muted} stroke={active ? 2.2 : 1.75} />
+                    <span style={{ fontSize: '12px', fontWeight: active ? 600 : 500 }}>{t.label}</span>
                   </button>
                 );
               })}
             </nav>
           </div>
-        </div>
-      </header>
-
-      {/* Main App Content Area */}
-      <main style={{ maxWidth: '1280px', margin: '24px auto 0', padding: '0 20px' }}>
-        {/* VIEW 1: DUAL SCREEN HACKATHON DEMO */}
-        {activeTab === 'demo' && (
-          <div>
-            {/* Operational Banner */}
-            <div style={{
-              background: 'var(--bg-surface)',
-              border: '1px solid var(--border-subtle)',
-              borderRadius: '12px',
-              padding: '12px 18px',
-              marginBottom: '24px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--color-success)' }}></span>
-                <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                  {lang === 'hi'
-                    ? 'लाइव पोर्टेबल प्रतिष्ठा प्रदर्शन: वर्कर का फोन (बाएं) और प्लेटफॉर्म ऑनबोर्डिंग डेस्क (दाएं)'
-                    : 'Live Portable Reputation Demo: Worker PWA (Left) & Platform Onboarding Desk (Right)'}
-                </span>
-              </div>
-              <span style={{ fontSize: '12px', color: 'var(--text-dim)', fontFamily: 'monospace' }}>
-                W3C DID: did:key Ed25519
-              </span>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(330px, 420px) 1fr', gap: '28px', alignItems: 'start' }}>
-              <div>{renderPhonePWA()}</div>
-              <div>{renderVerifierDesk()}</div>
-            </div>
-          </div>
         )}
-
-        {/* VIEW 2: STANDALONE MOBILE PWA VIEW */}
-        {activeTab === 'wallet' && (
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <div style={{ width: '100%', maxWidth: '420px' }}>
-              {renderPhonePWA()}
-            </div>
-          </div>
-        )}
-
-        {/* VIEW 3: VERIFIER DESK */}
-        {activeTab === 'verifier' && renderVerifierDesk()}
-
-        {/* VIEW 4: MOCK ISSUER PLATFORMS */}
-        {activeTab === 'issuers' && renderIssuerPortals()}
-      </main>
-
-      {/* MODAL 1: FULLSCREEN PRESENTATION QR MODAL */}
-      {qrModalOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="qr-modal-title"
-          onClick={() => setQrModalOpen(false)}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.85)',
-            backdropFilter: 'blur(8px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 100,
-            padding: '20px'
-          }}
-        >
-          <div
-            className="modal-animate"
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              background: 'var(--bg-surface)',
-              border: '1px solid var(--border-medium)',
-              borderRadius: '20px',
-              maxWidth: '380px',
-              width: '100%',
-              padding: '24px',
-              textAlign: 'center'
-            }}
-          >
-            <h3 id="qr-modal-title" style={{ fontSize: '18px', fontWeight: 800, margin: '0 0 4px', color: '#fff' }}>
-              {lang === 'hi' ? 'ऑनबोर्डिंग सत्यापन QR कोड' : 'Onboarding Presentation QR'}
-            </h3>
-            <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 18px' }}>
-              {lang === 'hi'
-                ? 'नया नियोक्ता इस QR कोड को स्कैन करके प्रतिष्ठा सत्यापित कर सकता है'
-                : 'Present this QR code to the onboarding desk at Zomato / Porter'}
-            </p>
-
-            <div style={{
-              background: '#fff',
-              padding: '16px',
-              borderRadius: '16px',
-              display: 'inline-block',
-              boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
-              marginBottom: '16px'
-            }}>
-              <QRCodeSVG
-                value={JSON.stringify(buildPresentationPayload())}
-                size={210}
-                level="L"
-              />
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '12px', color: 'var(--color-success)', fontWeight: 600 }}>
-              <Clock size={14} />
-              <span>{lang === 'hi' ? `सुरक्षा टाइमर: ${qrSecondsLeft}s में ताज़ा` : `Refreshes in ${qrSecondsLeft}s for security`}</span>
-            </div>
-
-            <p style={{ fontSize: '11px', color: 'var(--text-dim)', margin: '12px 0 20px' }}>
-              Includes {disclosedCredentials.length} cryptographically signed credentials. Press Esc to close.
-            </p>
-
-            <button
-              onClick={() => setQrModalOpen(false)}
-              aria-label="Close QR presentation modal"
-              style={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: '8px',
-                background: '#2563eb',
-                color: '#fff',
-                fontSize: '14px',
-                fontWeight: 700
-              }}
-            >
-              {lang === 'hi' ? 'बंद करें' : 'Close QR Code'}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL 2: RAW W3C PROOF INSPECTOR (UI/UX Pro Max Priority 1 & 8) */}
-      {inspectedCred && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="proof-modal-title"
-          onClick={() => setInspectedCred(null)}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.85)',
-            backdropFilter: 'blur(8px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 100,
-            padding: '20px'
-          }}
-        >
-          <div
-            className="modal-animate"
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              background: 'var(--bg-surface)',
-              border: '1px solid var(--border-medium)',
-              borderRadius: '16px',
-              maxWidth: '600px',
-              width: '100%',
-              maxHeight: '90vh',
-              overflowY: 'auto',
-              padding: '24px',
-              textAlign: 'left'
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <FileCode size={20} color="#2563eb" />
-                <h3 id="proof-modal-title" style={{ fontSize: '16px', fontWeight: 700, margin: 0, color: '#fff' }}>
-                  W3C Verifiable Credential Structure
-                </h3>
-              </div>
-              <button
-                onClick={() => setInspectedCred(null)}
-                aria-label="Close proof inspection dialog"
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: 'var(--text-muted)',
-                  fontSize: '22px',
-                  cursor: 'pointer',
-                  padding: '4px 8px'
-                }}
-              >
-                &times;
-              </button>
-            </div>
-
-            <div style={{
-              background: 'var(--bg-surface-sunken)',
-              padding: '16px',
-              borderRadius: '10px',
-              fontFamily: 'monospace',
-              fontSize: '11px',
-              color: '#38bdf8',
-              overflowX: 'auto',
-              border: '1px solid var(--border-subtle)',
-              marginBottom: '16px'
-            }}>
-              <pre>{JSON.stringify(inspectedCred, null, 2)}</pre>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <button
-                onClick={copyProofToClipboard}
-                aria-label="Copy canonical JSON to clipboard"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '8px 14px',
-                  borderRadius: '6px',
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid var(--border-subtle)',
-                  color: 'var(--text-secondary)',
-                  fontSize: '12px',
-                  fontWeight: 600
-                }}
-              >
-                {copiedProof ? <Check size={14} color="var(--color-success)" /> : <Copy size={14} />}
-                {copiedProof ? 'Copied to Clipboard!' : 'Copy Raw JSON'}
-              </button>
-
-              <button
-                onClick={() => setInspectedCred(null)}
-                aria-label="Close dialog"
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  background: '#2563eb',
-                  color: '#fff',
-                  fontSize: '13px',
-                  fontWeight: 600
-                }}
-              >
-                Done
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      </div>
     </div>
   );
 
-  /* SUB-RENDERER: PHONE PWA SHELL (UI/UX Pro Max Priority 2 & 5) */
-  function renderPhonePWA() {
+  /* TAB 1: WALLET HOME */
+  function renderWalletScreen() {
     return (
-      <div style={{
-        background: 'var(--bg-surface)',
-        borderRadius: '32px',
-        border: '6px solid #202434',
-        boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
-        overflow: 'hidden'
-      }}>
-        {/* Realistic Mobile Status Bar */}
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <Brand />
+
+        {/* Holder Identity */}
+        <div style={{ marginTop: '20px' }}>
+          <h1 style={{ fontSize: '24px', fontWeight: 600, color: colors.ink, margin: 0 }}>
+            {INITIAL_SNAPSHOT.holderName}
+          </h1>
+          <div style={{
+            fontFamily: 'JetBrains Mono, monospace',
+            fontSize: '12px',
+            color: colors.muted,
+            marginTop: '2px'
+          }}>
+            {shortDid(INITIAL_SNAPSHOT.did)}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px' }}>
+            <Dot on={true} />
+            <span style={{ fontSize: '13px', color: colors.muted }}>
+              Online. Wallet is up to date.
+            </span>
+          </div>
+        </div>
+
+        {/* Combined Rating & Standing */}
+        <div style={{ marginTop: '24px' }}>
+          <span style={{ fontSize: '13px', color: colors.muted }}>Combined rating</span>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '2px' }}>
+            <span style={{ fontSize: '48px', fontWeight: 600, lineHeight: 1.1, color: colors.ink }}>
+              {INITIAL_SNAPSHOT.reputation.rating.toFixed(2)}
+            </span>
+            <span style={{ fontSize: '13px', color: colors.muted }}>
+              out of {INITIAL_SNAPSHOT.reputation.outOf}
+            </span>
+          </div>
+          <div style={{ fontSize: '13px', color: colors.muted, marginTop: '2px' }}>
+            {INITIAL_SNAPSHOT.reputation.totalTasks.toLocaleString('en-IN')} completed tasks · no safety incidents
+          </div>
+
+          <div style={{
+            marginTop: '14px',
+            padding: '12px 14px',
+            borderRadius: '10px',
+            backgroundColor: colors.okTint
+          }}>
+            <span style={{ fontSize: '14px', lineHeight: '20px', color: colors.ok, fontWeight: 500 }}>
+              You qualify for {INITIAL_SNAPSHOT.reputation.tier} tier at platforms that accept this wallet.
+            </span>
+          </div>
+        </div>
+
+        {/* Work History Panel */}
+        <div style={{ marginTop: '24px' }}>
+          <div style={{ fontSize: '15px', fontWeight: 600, color: colors.ink, marginBottom: '8px' }}>
+            Work history
+          </div>
+          <Panel>
+            {INITIAL_SNAPSHOT.credentials.map((c, i) => {
+              const isRevoked = c.id === 'uber' && isUberRevoked;
+              return (
+                <PanelRow
+                  key={c.id}
+                  borderBottom={i < INITIAL_SNAPSHOT.credentials.length - 1}
+                  style={{ gap: '12px', minHeight: '64px' }}
+                >
+                  <div style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '18px',
+                    backgroundColor: colors.avatar,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 600,
+                    fontSize: '14px',
+                    color: colors.ink,
+                    flexShrink: 0
+                  }}>
+                    {c.initial}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: '15px', fontWeight: 600, color: colors.ink }}>
+                      {c.title}
+                    </div>
+                    <div style={{ fontSize: '13px', color: colors.muted }}>
+                      {c.subtitle}
+                    </div>
+                  </div>
+                  <Status kind={isRevoked ? 'bad' : 'ok'} label={isRevoked ? 'Revoked' : 'Verified'} />
+                </PanelRow>
+              );
+            })}
+          </Panel>
+          <div style={{ fontSize: '13px', color: colors.muted, marginTop: '10px' }}>
+            Revocation last checked {INITIAL_SNAPSHOT.revocationCheckedAt}
+          </div>
+        </div>
+
+        {/* Primary CTA */}
+        <div style={{ marginTop: '24px' }}>
+          <Button label="Share my reputation" onClick={() => setTab('share')} />
+        </div>
+      </div>
+    );
+  }
+
+  /* TAB 2: SHARE REPUTATION WITH DYNAMIC QR */
+  function renderShareScreen() {
+    const valid = INITIAL_SNAPSHOT.credentials;
+    const qrPayload = `GW1:SAMPLE-${picked.join('-').toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <h1 style={{ fontSize: '24px', fontWeight: 600, color: colors.ink, margin: 0 }}>
+          Share my reputation
+        </h1>
+        <p style={{ color: colors.muted, marginTop: '4px', fontSize: '14px' }}>
+          Hold your phone up to the new platform's scanner.
+        </p>
+
+        {/* QR Code Container */}
         <div style={{
-          height: '28px',
-          background: 'var(--bg-surface)',
+          marginTop: '16px',
+          backgroundColor: colors.surface,
+          border: `1px solid ${colors.line}`,
+          borderRadius: '12px',
+          padding: '24px 20px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '14px'
+        }}>
+          <div style={{
+            padding: '12px',
+            backgroundColor: '#FFFFFF',
+            borderRadius: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <QRCodeSVG
+              value={qrPayload}
+              size={210}
+              level="M"
+              fgColor="#111111"
+              bgColor="#FFFFFF"
+            />
+          </div>
+          <div style={{ fontSize: '14px', color: colors.muted }}>
+            Code refreshes in{' '}
+            <span style={{ fontWeight: 600, color: colors.ink }}>
+              0:{countdown < 10 ? `0${countdown}` : countdown}
+            </span>
+          </div>
+        </div>
+
+        {/* Included Credentials Checklist */}
+        <div style={{ marginTop: '20px' }}>
+          <div style={{ fontSize: '15px', fontWeight: 600, color: colors.ink, marginBottom: '8px' }}>
+            Included
+          </div>
+          <Panel>
+            {valid.map((c, i) => {
+              const on = picked.includes(c.id);
+              return (
+                <PanelRow
+                  key={c.id}
+                  onClick={() => togglePick(c.id)}
+                  borderBottom={i < valid.length - 1}
+                  style={{ gap: '12px', minHeight: '52px' }}
+                >
+                  <div style={{
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '5px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: on ? colors.brand : colors.surface,
+                    border: on ? 'none' : `1.5px solid ${colors.lineStrong}`,
+                    flexShrink: 0
+                  }}>
+                    {on && <Icon name="check" size={13} color="#FFFFFF" stroke={3} />}
+                  </div>
+                  <span style={{ fontSize: '15px', color: colors.ink }}>{c.title}</span>
+                </PanelRow>
+              );
+            })}
+          </Panel>
+          <div style={{ fontSize: '13px', color: colors.muted, marginTop: '10px' }}>
+            Shares your name, ratings, task counts and certificate. Nothing else.
+          </div>
+        </div>
+
+        {/* Action Button */}
+        <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <Button
+            label="Refresh code"
+            variant="secondary"
+            onClick={() => setCountdown(60)}
+          />
+          <Button
+            label="Simulate Platform Verifier Scan"
+            onClick={() => {
+              setVerifyScenario('verified');
+              setTab('verify');
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  /* TAB 3: INBOX */
+  function renderInboxScreen() {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <h1 style={{ fontSize: '24px', fontWeight: 600, color: colors.ink, margin: 0 }}>
+          Inbox
+        </h1>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', padding: '32px 0' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: 600, color: colors.ink, margin: 0 }}>
+            Nothing waiting
+          </h2>
+          <p style={{ fontSize: '14px', color: colors.muted, margin: 0 }}>
+            When Swiggy, Uber or a skills authority sends you a credential, it will appear here for you to accept.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  /* TAB 4: ME */
+  function renderMeScreen() {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <h1 style={{ fontSize: '24px', fontWeight: 600, color: colors.ink, margin: 0 }}>
+          Me
+        </h1>
+
+        <div style={{ marginTop: '24px' }}>
+          <div style={{ fontSize: '15px', fontWeight: 600, color: colors.ink, marginBottom: '8px' }}>
+            Your ID
+          </div>
+          <Panel>
+            <PanelRow style={{ gap: '12px', minHeight: '56px' }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '15px', fontWeight: 600, color: colors.ink }}>
+                  {INITIAL_SNAPSHOT.holderName}
+                </div>
+                <div style={{ fontSize: '13px', color: colors.muted, fontFamily: 'monospace' }}>
+                  {shortDid(INITIAL_SNAPSHOT.did)}
+                </div>
+              </div>
+            </PanelRow>
+            <PanelRow
+              onClick={copyDid}
+              borderBottom={false}
+              style={{ gap: '12px', minHeight: '56px', cursor: 'pointer' }}
+            >
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '15px', fontWeight: 600, color: colors.ink }}>
+                  {copied ? 'Copied to clipboard' : 'Copy my ID'}
+                </div>
+                <div style={{ fontSize: '13px', color: colors.muted }}>
+                  Share this only with people you trust
+                </div>
+              </div>
+              <Icon name="copy" size={18} color={colors.muted} />
+            </PanelRow>
+          </Panel>
+        </div>
+
+        {/* Verifier Preview Simulation */}
+        <div style={{ marginTop: '24px' }}>
+          <div style={{ fontSize: '15px', fontWeight: 600, color: colors.ink, marginBottom: '8px' }}>
+            Verifier preview
+          </div>
+          <Panel>
+            <PanelRow
+              onClick={() => {
+                setVerifyScenario('verified');
+                setTab('verify');
+              }}
+              style={{ gap: '12px', minHeight: '56px', cursor: 'pointer' }}
+            >
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '15px', fontWeight: 600, color: colors.ink }}>
+                  Verified result
+                </div>
+                <div style={{ fontSize: '13px', color: colors.muted }}>
+                  What a new platform sees
+                </div>
+              </div>
+              <Icon name="chevron" size={18} color={colors.muted} />
+            </PanelRow>
+            <PanelRow
+              onClick={() => {
+                setVerifyScenario('rejected');
+                setTab('verify');
+              }}
+              borderBottom={false}
+              style={{ gap: '12px', minHeight: '56px', cursor: 'pointer' }}
+            >
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '15px', fontWeight: 600, color: colors.ink }}>
+                  Rejected result
+                </div>
+                <div style={{ fontSize: '13px', color: colors.muted }}>
+                  When a credential was altered or forged
+                </div>
+              </div>
+              <Icon name="chevron" size={18} color={colors.muted} />
+            </PanelRow>
+          </Panel>
+        </div>
+
+        {/* Security Revocation Edge Case Test */}
+        <div style={{ marginTop: '24px' }}>
+          <div style={{ fontSize: '15px', fontWeight: 600, color: colors.ink, marginBottom: '8px' }}>
+            Issuance & Revocation Simulator
+          </div>
+          <Panel>
+            <PanelRow borderBottom={false} style={{ flexDirection: 'column', alignItems: 'stretch', gap: '8px' }}>
+              <div style={{ fontSize: '13px', color: colors.muted }}>
+                Simulate an issuer (Uber) policy violation strike that revokes worker standing on-chain:
+              </div>
+              <Button
+                label={isUberRevoked ? 'Restore Uber Credential' : 'Revoke Uber Credential (Simulate Strike)'}
+                variant={isUberRevoked ? 'primary' : 'danger'}
+                onClick={toggleRevokeUber}
+              />
+            </PanelRow>
+          </Panel>
+        </div>
+
+        {/* App Footer */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '32px' }}>
+          <StarMark size={40} />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: '15px', fontWeight: 600, color: colors.ink }}>GigWallet</div>
+            <div style={{ fontSize: '13px', color: colors.muted }}>
+              Version 0.1.0. Your credentials stay on this phone.
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* SCREEN 5: VERIFIER RESULT (RESPONSIVE INSPECTION) */
+  function renderVerifyScreen() {
+    const isOk = verifyScenario === 'verified' && !isUberRevoked;
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        {/* Verifier Navigation Bar */}
+        <div style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '0 18px',
-          fontSize: '11px',
-          fontWeight: 600,
-          color: 'var(--text-muted)'
+          paddingBottom: '16px',
+          borderBottom: `1px solid ${colors.line}`,
+          marginBottom: '20px'
         }}>
-          <span>12:45 IST</span>
-          <div style={{ width: '60px', height: '4px', background: '#202434', borderRadius: '4px' }}></div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Wifi size={12} />
-            <BatteryCharging size={12} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <button
+              onClick={() => setTab('wallet')}
+              aria-label="Back to wallet"
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '8px',
+                border: `1px solid ${colors.line}`,
+                backgroundColor: colors.surface,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer'
+              }}
+            >
+              <div style={{ transform: 'rotate(180deg)' }}>
+                <Icon name="chevron" size={16} />
+              </div>
+            </button>
+            <Brand suffix="Verifier" />
+          </div>
+          <div style={{ fontSize: '13px', fontWeight: 600, color: colors.brand }}>
+            Zomato Partner Onboarding
           </div>
         </div>
 
-        {/* Phone Body */}
-        <div style={{ padding: '16px' }}>
-          {/* Worker Identity Card */}
-          <div style={{
-            background: 'var(--bg-surface-elevated)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: '16px',
-            padding: '16px',
-            marginBottom: '16px',
-            textAlign: 'left'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{
-                  width: '42px',
-                  height: '42px',
-                  borderRadius: '10px',
-                  background: '#2563eb',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 800,
-                  fontSize: '15px',
-                  color: '#fff'
-                }}>
-                  {persona.avatar}
-                </div>
-                <div>
-                  <h3 style={{ fontSize: '15px', fontWeight: 800, margin: 0, color: '#fff' }}>
-                    {lang === 'hi' ? persona.nameHi : persona.name}
-                  </h3>
-                  <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '1px 0 0' }}>
-                    {lang === 'hi' ? persona.roleHi : persona.role} &bull; {persona.city}
-                  </p>
-                </div>
-              </div>
-
-              <span style={{
-                background: 'rgba(16,185,129,0.1)',
-                color: 'var(--color-success)',
-                border: '1px solid rgba(16,185,129,0.25)',
-                fontSize: '10px',
-                fontWeight: 700,
-                padding: '2px 6px',
-                borderRadius: '4px'
-              }}>
-                DID ACTIVE
-              </span>
-            </div>
-
-            {/* Core Metrics Bar */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: '6px',
-              background: 'var(--bg-surface-sunken)',
-              padding: '10px',
-              borderRadius: '10px',
-              textAlign: 'center'
-            }}>
-              <div>
-                <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                  {lang === 'hi' ? 'रेटिंग' : 'Rating'}
-                </div>
-                <div style={{ fontSize: '15px', fontWeight: 800, color: '#fbbf24', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px' }}>
-                  <Star size={12} fill="#fbbf24" /> {avgRating}
-                </div>
-              </div>
-
-              <div>
-                <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                  {lang === 'hi' ? 'कुल कार्य' : 'Total Tasks'}
-                </div>
-                <div style={{ fontSize: '15px', fontWeight: 800, color: '#fff' }}>
-                  {totalTasks.toLocaleString()}
-                </div>
-              </div>
-
-              <div>
-                <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                  {lang === 'hi' ? 'प्रमाणित' : 'Passes'}
-                </div>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-success)', marginTop: '2px' }}>
-                  {disclosedCredentials.length} VCs
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Selective Disclosure Credentials List */}
-          <div style={{ textAlign: 'left', marginBottom: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)' }}>
-                {lang === 'hi' ? 'सत्यापित साख पत्र (प्रकटीकरण चुनें)' : 'Verified Credentials (Select to Disclose)'}
-              </span>
-              <span style={{ fontSize: '11px', color: '#2563eb', fontWeight: 600 }}>
-                {disclosedCredentials.length} / {userCredentials.length} Selected
-              </span>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {userCredentials.map(c => {
-                const isSelected = selectedForDisclosure.has(c.id);
-                const isRevoked = revokedIds.has(c.id);
-                return (
-                  <div
-                    key={c.id}
-                    style={{
-                      background: 'var(--bg-surface-elevated)',
-                      border: isRevoked ? '2px solid var(--color-danger)' : isSelected ? '1px solid rgba(37,99,235,0.4)' : '1px solid var(--border-subtle)',
-                      borderRadius: '12px',
-                      padding: '12px',
-                      opacity: isSelected ? 1 : 0.5,
-                      transition: 'all 0.15s'
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        {/* Accessible Touch Checkbox (UI/UX Pro Max Priority 1 & 2) */}
-                        <button
-                          onClick={() => toggleDisclosure(c.id)}
-                          aria-label={`Toggle selective disclosure for ${c.platformName}`}
-                          aria-checked={isSelected}
-                          style={{
-                            width: '28px',
-                            height: '28px',
-                            minHeight: '28px',
-                            borderRadius: '6px',
-                            border: isSelected ? 'none' : '1px solid rgba(255,255,255,0.3)',
-                            background: isSelected ? '#2563eb' : 'transparent',
-                            color: '#fff',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          {isSelected && <Check size={16} />}
-                        </button>
-
-                        <div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: c.brandColor }}></span>
-                            <span style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>
-                              {c.platformName}
-                            </span>
-                          </div>
-                          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                            ID: {c.partnerId} &bull; {lang === 'hi' ? c.badgeTitleHi : c.badgeTitle}
-                          </span>
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={() => setInspectedCred(c)}
-                        aria-label={`Inspect cryptographic proof for ${c.platformName}`}
-                        style={{
-                          background: 'rgba(255,255,255,0.06)',
-                          color: 'var(--text-secondary)',
-                          fontSize: '11px',
-                          padding: '6px 10px',
-                          minHeight: '32px',
-                          borderRadius: '6px',
-                          fontWeight: 600,
-                          cursor: 'pointer'
-                        }}
-                      >
-                        Proof
-                      </button>
-                    </div>
-
-                    <div style={{ display: 'flex', gap: '12px', marginTop: '8px', fontSize: '11px', color: 'var(--text-secondary)', paddingLeft: '38px' }}>
-                      {c.credentialSubject.lifetimeDeliveries && <span><strong>{c.credentialSubject.lifetimeDeliveries}</strong> Orders</span>}
-                      {c.credentialSubject.completedTrips && <span><strong>{c.credentialSubject.completedTrips}</strong> Trips</span>}
-                      {c.credentialSubject.averageRating && <span><strong>{c.credentialSubject.averageRating}★</strong> Rating</span>}
-                      {c.credentialSubject.grade && <span>Grade: <strong>{c.credentialSubject.grade}</strong></span>}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Present QR Button */}
+        {/* Scenario Toggle */}
+        <div style={{
+          display: 'flex',
+          gap: '8px',
+          marginBottom: '20px',
+          backgroundColor: colors.surface,
+          padding: '4px',
+          borderRadius: '10px',
+          border: `1px solid ${colors.line}`
+        }}>
           <button
-            onClick={() => setQrModalOpen(true)}
-            aria-label="Generate and display presentation QR code"
+            onClick={() => setVerifyScenario('verified')}
             style={{
-              width: '100%',
-              padding: '12px',
-              borderRadius: '12px',
-              background: '#2563eb',
-              color: '#fff',
-              fontSize: '14px',
-              fontWeight: 700,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              boxShadow: '0 4px 12px rgba(37,99,235,0.3)',
+              flex: 1,
+              height: '36px',
+              borderRadius: '8px',
+              border: 'none',
+              backgroundColor: verifyScenario === 'verified' ? colors.brand : 'transparent',
+              color: verifyScenario === 'verified' ? colors.onBrand : colors.muted,
+              fontSize: '13px',
+              fontWeight: 600,
               cursor: 'pointer'
             }}
           >
-            <QrCode size={18} />
-            {lang === 'hi' ? 'सत्यापन के लिए QR दिखाएं' : 'Present Reputation QR Code'}
+            Authentic Presentation
+          </button>
+          <button
+            onClick={() => setVerifyScenario('rejected')}
+            style={{
+              flex: 1,
+              height: '36px',
+              borderRadius: '8px',
+              border: 'none',
+              backgroundColor: verifyScenario === 'rejected' ? colors.bad : 'transparent',
+              color: verifyScenario === 'rejected' ? '#FFFFFF' : colors.muted,
+              fontSize: '13px',
+              fontWeight: 600,
+              cursor: 'pointer'
+            }}
+          >
+            Tampered Presentation
           </button>
         </div>
-      </div>
-    );
-  }
 
-  /* SUB-RENDERER: ONBOARDING VERIFIER DESK */
-  function renderVerifierDesk() {
-    return (
-      <div style={{
-        background: 'var(--bg-surface)',
-        borderRadius: '20px',
-        border: '1px solid var(--border-subtle)',
-        padding: '24px',
-        textAlign: 'left'
-      }}>
-        {/* Terminal Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '16px', marginBottom: '20px' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Building2 size={18} color="#2563eb" />
-              <h3 style={{ fontSize: '16px', fontWeight: 800, margin: 0, color: '#fff' }}>
-                Zomato / Porter Fleet Onboarding Terminal
-              </h3>
+        {/* Verification Summary Card */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: window.innerWidth > 640 ? '280px 1fr' : '1fr',
+          gap: '24px',
+          alignItems: 'flex-start'
+        }}>
+          {/* Left Column: Verdict & Metrics */}
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <Status
+              kind={isOk ? 'ok' : 'bad'}
+              label={isOk ? 'Verified' : 'Not verified'}
+              size="lg"
+            />
+            <div style={{ fontSize: '13px', color: colors.muted, marginTop: '4px' }}>
+              {isOk
+                ? 'All four checks passed in 1.4 seconds.'
+                : isUberRevoked
+                ? 'One credential was revoked by the issuing authority.'
+                : 'One credential was changed after the issuer signed it.'}
             </div>
-            <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '2px 0 0' }}>
-              Enterprise W3C Decentralized Credential Scanner
-            </p>
-          </div>
 
-          <div style={{ display: 'flex', gap: '8px' }}>
-            {/* Tamper Simulation Toggle */}
-            <button
-              onClick={() => {
-                setTamperMode(!tamperMode);
-                setVerificationResult(null);
-              }}
-              aria-label="Simulate forged or altered credential payload"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '8px 12px',
-                borderRadius: '6px',
-                border: '1px solid',
-                borderColor: tamperMode ? 'var(--color-danger)' : 'var(--border-subtle)',
-                background: tamperMode ? 'rgba(239,68,68,0.15)' : 'transparent',
-                color: tamperMode ? '#fca5a5' : 'var(--text-muted)',
-                fontSize: '12px',
-                fontWeight: 600,
-                cursor: 'pointer'
-              }}
-            >
-              <AlertTriangle size={14} />
-              {tamperMode ? 'Tamper Active (Altered 5.0★)' : 'Simulate Forgery'}
-            </button>
+            <div style={{ fontSize: '13px', color: colors.muted, marginTop: '24px' }}>Combined rating</div>
+            <div style={{ fontSize: '44px', fontWeight: 600, color: colors.ink, lineHeight: 1.1 }}>
+              {isOk ? '4.91' : '-'}
+            </div>
+            <div style={{ fontSize: '13px', color: colors.muted }}>
+              {isOk ? 'out of 5 · 4,660 completed tasks · no safety incidents' : 'Cannot be calculated from an invalid record'}
+            </div>
 
-            {/* Scan / Verify Button */}
-            <button
-              onClick={handleVerify}
-              disabled={verifying}
-              aria-label="Verify presented credential signatures and status"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '8px 16px',
-                borderRadius: '8px',
-                background: 'var(--color-success)',
-                color: '#fff',
-                fontSize: '13px',
-                fontWeight: 700,
-                cursor: 'pointer'
-              }}
-            >
-              <ScanLine size={16} />
-              {verifying ? 'Verifying...' : 'Scan & Verify QR'}
-            </button>
-          </div>
-        </div>
+            <div style={{ fontSize: '13px', color: colors.muted, marginTop: '20px' }}>Recommended tier</div>
+            <div style={{ fontSize: '18px', fontWeight: 600, color: colors.ink }}>
+              {isOk ? 'Gold Partner' : 'Standard (no verified history)'}
+            </div>
 
-        {/* Loading Spinner */}
-        {verifying && (
-          <div role="status" aria-live="polite" style={{ textAlign: 'center', padding: '36px 0' }}>
-            <div className="spin-slow" style={{
-              display: 'inline-block',
-              width: '32px',
-              height: '32px',
-              border: '3px solid rgba(37,99,235,0.2)',
-              borderTopColor: '#2563eb',
-              borderRadius: '50%'
-            }} />
-            <p style={{ marginTop: '12px', fontSize: '13px', color: 'var(--text-muted)' }}>
-              Executing Ed25519 cryptographic proof verification...
-            </p>
-          </div>
-        )}
-
-        {/* Verification Result Display */}
-        {verificationResult && (
-          <div role="region" aria-live="polite">
-            {/* SUCCESS STATE */}
-            {verificationResult.valid ? (
-              <div>
+            <div style={{ marginTop: '20px' }}>
+              {decided ? (
                 <div style={{
-                  background: 'rgba(16,185,129,0.06)',
-                  border: '1px solid rgba(16,185,129,0.25)',
-                  borderRadius: '14px',
-                  padding: '18px',
-                  marginBottom: '18px'
+                  padding: '12px',
+                  backgroundColor: colors.okTint,
+                  borderRadius: '10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <CheckCircle2 size={24} color="var(--color-success)" />
-                      <div>
-                        <h4 style={{ fontSize: '15px', fontWeight: 800, margin: 0, color: 'var(--color-success)' }}>
-                          Verified Gig Worker Identity
-                        </h4>
-                        <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '2px 0 0' }}>
-                          Candidate: {verificationResult.holderName} &bull; {verificationResult.holderDid.slice(0, 18)}...
-                        </p>
-                      </div>
-                    </div>
+                  <Status kind="ok" label="Marked for fast-track onboarding" />
+                </div>
+              ) : (
+                <Button
+                  label={isOk ? 'Fast-track as Gold Partner' : 'Reject and scan again'}
+                  variant={isOk ? 'primary' : 'danger'}
+                  onClick={() => (isOk ? setDecided(true) : setTab('wallet'))}
+                />
+              )}
+            </div>
 
+            <div style={{ fontSize: '12px', color: colors.muted, marginTop: '12px', lineHeight: 1.4 }}>
+              Without this wallet, the worker would start at Standard tier with no history.
+            </div>
+          </div>
+
+          {/* Right Column: Cryptographic Checks & Credentials */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div>
+              <div style={{ fontSize: '15px', fontWeight: 600, color: colors.ink, marginBottom: '8px' }}>
+                Cryptographic Checks
+              </div>
+              <Panel>
+                {[
+                  {
+                    id: 'pres',
+                    title: 'Presentation signature',
+                    detail: 'The worker holds the Ed25519 private key for this identity.',
+                    passed: true
+                  },
+                  {
+                    id: 'iss',
+                    title: 'Issuer signatures',
+                    detail: isOk ? 'All 3 credentials signed by known platform DIDs.' : '1 credential signature failed verification.',
+                    passed: isOk
+                  },
+                  {
+                    id: 'val',
+                    title: 'Dates and expiry',
+                    detail: 'All within valid issuance timestamps.',
+                    passed: true
+                  },
+                  {
+                    id: 'rev',
+                    title: 'Revocation status',
+                    detail: !isUberRevoked ? 'None revoked. Central registry checked.' : 'Uber credential marked as REVOKED.',
+                    passed: !isUberRevoked
+                  }
+                ].map((c, i) => (
+                  <PanelRow
+                    key={c.id}
+                    borderBottom={i < 3}
+                    style={{
+                      justifyContent: 'space-between',
+                      backgroundColor: !c.passed ? colors.badTint : 'transparent',
+                      minHeight: '54px'
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: '14px', fontWeight: 600, color: colors.ink }}>{c.title}</div>
+                      <div style={{ fontSize: '12px', color: colors.muted }}>{c.detail}</div>
+                    </div>
                     <span style={{
-                      background: 'var(--color-success)',
-                      color: '#064e3b',
-                      fontSize: '11px',
-                      fontWeight: 800,
-                      padding: '3px 8px',
-                      borderRadius: '12px'
+                      fontWeight: 600,
+                      fontSize: '13px',
+                      color: c.passed ? colors.ok : colors.bad
                     }}>
-                      PASSED (ALL PROOFS)
+                      {c.passed ? 'Passed' : 'Failed'}
                     </span>
-                  </div>
+                  </PanelRow>
+                ))}
+              </Panel>
+            </div>
 
-                  {/* Trust Scorecard */}
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(3, 1fr)',
-                    gap: '10px',
-                    background: 'var(--bg-surface-sunken)',
-                    padding: '12px',
-                    borderRadius: '10px',
-                    marginBottom: '14px'
-                  }}>
+            <div>
+              <div style={{ fontSize: '15px', fontWeight: 600, color: colors.ink, marginBottom: '8px' }}>
+                Credentials Presented
+              </div>
+              <Panel>
+                {[
+                  {
+                    id: 'swiggy',
+                    title: 'Swiggy · 3,240 deliveries',
+                    detail: 'Rating 4.92 · Top Tier Partner',
+                    valid: true
+                  },
+                  {
+                    id: 'uber',
+                    title: 'Uber · 1,420 trips',
+                    detail: !isOk
+                      ? 'Rating shown 5.00. Uber signed 4.88.'
+                      : isUberRevoked
+                      ? 'Status: Revoked by platform policy'
+                      : 'Rating 4.88 · 0 safety incidents',
+                    valid: isOk && !isUberRevoked
+                  },
+                  {
+                    id: 'nsdc',
+                    title: 'Skill India (NSDC)',
+                    detail: 'Two-Wheeler Operations, Level 2',
+                    valid: true
+                  }
+                ].map((c, i) => (
+                  <PanelRow
+                    key={c.id}
+                    borderBottom={i < 2}
+                    style={{
+                      justifyContent: 'space-between',
+                      backgroundColor: !c.valid ? colors.badTint : 'transparent',
+                      minHeight: '54px'
+                    }}
+                  >
                     <div>
-                      <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>TOTAL TASKS</div>
-                      <div style={{ fontSize: '20px', fontWeight: 800, color: '#fff' }}>
-                        {verificationResult.totalTasks.toLocaleString()}
-                      </div>
-                      <div style={{ fontSize: '10px', color: '#34d399' }}>Verified Delivery Volume</div>
+                      <div style={{ fontSize: '14px', fontWeight: 600, color: colors.ink }}>{c.title}</div>
+                      <div style={{ fontSize: '12px', color: colors.muted }}>{c.detail}</div>
                     </div>
-
-                    <div>
-                      <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>CROSS-PLATFORM RATING</div>
-                      <div style={{ fontSize: '20px', fontWeight: 800, color: '#fbbf24' }}>
-                        {verificationResult.compositeRating} &#9733;
-                      </div>
-                      <div style={{ fontSize: '10px', color: '#34d399' }}>Top Tier Bracket</div>
-                    </div>
-
-                    <div>
-                      <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>SECURITY DEPOSIT</div>
-                      <div style={{ fontSize: '16px', fontWeight: 800, color: '#60a5fa', marginTop: '3px' }}>
-                        {verificationResult.depositWaived}
-                      </div>
-                      <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Based on Past Track Record</div>
-                    </div>
-                  </div>
-
-                  {/* Decision Box */}
-                  <div style={{
-                    background: 'var(--bg-surface-elevated)',
-                    border: '1px solid rgba(37,99,235,0.3)',
-                    padding: '12px 16px',
-                    borderRadius: '10px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between'
-                  }}>
-                    <div>
-                      <div style={{ fontSize: '10px', color: '#93c5fd', fontWeight: 800, textTransform: 'uppercase' }}>
-                        ONBOARDING STATUS
-                      </div>
-                      <div style={{ fontSize: '14px', fontWeight: 700, color: '#fff', marginTop: '2px' }}>
-                        {verificationResult.tier}
-                      </div>
-                    </div>
-                    <span style={{ fontSize: '11px', color: '#93c5fd', background: 'rgba(37,99,235,0.2)', padding: '5px 10px', borderRadius: '6px', fontWeight: 700 }}>
-                      {verificationResult.probationWaived ? 'Probation Waived & Priority Dispatch' : 'Standard 30-Day Evaluation'}
+                    <span style={{
+                      fontWeight: 600,
+                      fontSize: '13px',
+                      color: c.valid ? colors.ok : colors.bad
+                    }}>
+                      {c.valid ? 'Valid' : 'Altered'}
                     </span>
-                  </div>
-                </div>
-
-                {/* Audit trail */}
-                <h5 style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '8px' }}>
-                  Cryptographic Verification Trail
-                </h5>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {verificationResult.checks.map((chk, i) => (
-                    <div key={i} style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '8px 12px',
-                      background: 'rgba(255,255,255,0.03)',
-                      borderRadius: '6px',
-                      fontSize: '11px'
-                    }}>
-                      <span style={{ color: 'var(--text-secondary)' }}>{chk.name}</span>
-                      <span style={{ color: 'var(--color-success)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <CheckCircle2 size={12} /> Verified
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              /* FAILURE STATE */
-              <div style={{
-                background: 'rgba(239,68,68,0.08)',
-                border: '1px solid rgba(239,68,68,0.3)',
-                borderRadius: '14px',
-                padding: '18px'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-                  <XCircle size={26} color="var(--color-danger)" />
-                  <div>
-                    <h4 style={{ fontSize: '15px', fontWeight: 800, margin: 0, color: 'var(--color-danger)' }}>
-                      Verification Rejected: Cryptographic Integrity Failure
-                    </h4>
-                    <p style={{ fontSize: '12px', color: '#fca5a5', margin: '3px 0 0' }}>
-                      {verificationResult.error}
-                    </p>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '12px' }}>
-                  {verificationResult.checks.map((chk, i) => (
-                    <div key={i} style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '8px 12px',
-                      background: 'var(--bg-surface-sunken)',
-                      borderRadius: '6px',
-                      fontSize: '11px'
-                    }}>
-                      <span style={{ color: chk.pass ? 'var(--text-secondary)' : '#fca5a5' }}>{chk.name}</span>
-                      <span style={{ color: chk.pass ? 'var(--color-success)' : 'var(--color-danger)', fontWeight: 600 }}>
-                        {chk.pass ? 'Verified' : (chk.error || 'Failed')}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {!verificationResult && !verifying && (
-          <div style={{ textAlign: 'center', padding: '36px 0', color: 'var(--text-dim)' }}>
-            <ScanLine size={32} style={{ margin: '0 auto 8px', opacity: 0.5 }} />
-            <p style={{ fontSize: '13px' }}>Click "Scan & Verify QR" to inspect the presentation payload.</p>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  /* SUB-RENDERER: MOCK ISSUER PORTALS */
-  function renderIssuerPortals() {
-    return (
-      <div>
-        <div style={{ textAlign: 'left', marginBottom: '20px' }}>
-          <h2 style={{ fontSize: '20px', fontWeight: 800, margin: '0 0 4px', color: '#fff' }}>
-            Platform Issuance Portals
-          </h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>
-            Platforms sign and issue verifiable credentials to workers. They can also revoke credentials on the central registry.
-          </p>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
-          {/* Swiggy */}
-          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: '14px', padding: '16px', textAlign: 'left' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-              <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: 'var(--brand-swiggy)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, color: '#fff' }}>
-                S
-              </div>
-              <div>
-                <h4 style={{ fontSize: '14px', fontWeight: 700, margin: 0, color: '#fff' }}>Swiggy Delivery Partner</h4>
-                <span style={{ fontSize: '10px', color: 'var(--brand-swiggy)', fontFamily: 'monospace' }}>did:key:z6MkuwSwiggy...</span>
-              </div>
+                  </PanelRow>
+                ))}
+              </Panel>
             </div>
-            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '14px' }}>
-              Issues verifiable food & grocery delivery performance records (3,240 deliveries, 4.92★ rating).
-            </p>
-            <div style={{ fontSize: '12px', color: 'var(--color-success)', fontWeight: 600 }}>Active in Wallet</div>
-          </div>
-
-          {/* Uber */}
-          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: '14px', padding: '16px', textAlign: 'left' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-              <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: '#000', border: '1px solid #333', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, color: '#fff' }}>
-                U
-              </div>
-              <div>
-                <h4 style={{ fontSize: '14px', fontWeight: 700, margin: 0, color: '#fff' }}>Uber Mobility Fleet</h4>
-                <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>did:key:z6MkuwUber...</span>
-              </div>
-            </div>
-            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '14px' }}>
-              Issues rideshare records (1,420 trips, 4.88★, Diamond standing). Test revocation below:
-            </p>
-            <button
-              onClick={() => toggleRevoke('urn:uuid:uber-rep-551029')}
-              aria-label="Toggle Uber credential revocation status"
-              style={{
-                width: '100%',
-                padding: '8px',
-                borderRadius: '6px',
-                border: '1px solid',
-                borderColor: revokedIds.has('urn:uuid:uber-rep-551029') ? 'var(--color-danger)' : 'var(--text-dim)',
-                background: revokedIds.has('urn:uuid:uber-rep-551029') ? 'var(--color-danger)' : 'rgba(255,255,255,0.04)',
-                color: '#fff',
-                fontSize: '12px',
-                fontWeight: 600,
-                cursor: 'pointer'
-              }}
-            >
-              {revokedIds.has('urn:uuid:uber-rep-551029') ? 'Revoked (Click to Restore)' : 'Revoke Credential (Simulate Policy Strike)'}
-            </button>
-          </div>
-
-          {/* NSDC Skill India */}
-          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: '14px', padding: '16px', textAlign: 'left' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-              <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: 'var(--brand-nsdc)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, color: '#fff' }}>
-                SI
-              </div>
-              <div>
-                <h4 style={{ fontSize: '14px', fontWeight: 700, margin: 0, color: '#fff' }}>NSDC / Skill India</h4>
-                <span style={{ fontSize: '10px', color: '#60a5fa', fontFamily: 'monospace' }}>did:key:z6MkuwSkillIndia...</span>
-              </div>
-            </div>
-            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '14px' }}>
-              Issues government skill competency certification (Two-Wheeler Operations Level 2, Distinction).
-            </p>
-            <div style={{ fontSize: '12px', color: 'var(--color-success)', fontWeight: 600 }}>Government Verified</div>
           </div>
         </div>
       </div>

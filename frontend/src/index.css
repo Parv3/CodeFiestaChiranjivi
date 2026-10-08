@@ -1,21 +1,22 @@
 :root {
-  --bg-app: #080a10;
-  --bg-surface: #10131d;
-  --bg-surface-elevated: #171b28;
-  --bg-surface-sunken: #0c0e16;
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-medium: rgba(255, 255, 255, 0.16);
-  --border-focus: #3b82f6;
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --text-dim: #64748b;
-  --brand-swiggy: #fc8019;
-  --brand-uber: #ffffff;
-  --brand-nsdc: #2563eb;
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-danger: #ef4444;
+  --bg-app: #F5F4F0;
+  --bg-surface: #FFFFFF;
+  --bg-surface-elevated: #FFFFFF;
+  --bg-surface-sunken: #ECEAE4;
+  --border-subtle: #E3E0D8;
+  --border-medium: #CFCBC1;
+  --border-focus: #1B4D3E;
+  --text-primary: #1C1B19;
+  --text-secondary: #4A4741;
+  --text-muted: #6B675F;
+  --text-dim: #949088;
+  --brand-primary: #1B4D3E;
+  --brand-on-primary: #FFFFFF;
+  --brand-gold: #E8B100;
+  --color-success: #1B6B4F;
+  --color-success-tint: #E4EEE9;
+  --color-danger: #B3261E;
+  --color-danger-tint: #FBEDEB;
 }
 
 * {
@@ -40,14 +41,13 @@ code, .mono {
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* Touch & Focus Accessibility Rules (UI/UX Pro Max Priority 1 & 2) */
+/* Touch & Focus Accessibility Rules */
 button, select, input, a {
   font-family: inherit;
   outline: none;
-  min-height: 44px; /* Touch target minimum 44px */
 }
 
-button:focus-visible, select:focus-visible {
+button:focus-visible, select:focus-visible, a:focus-visible {
   outline: 2px solid var(--border-focus);
   outline-offset: 2px;
 }
@@ -57,49 +57,15 @@ button:active {
   transition: transform 80ms ease;
 }
 
-/* Modal Animation */
-@keyframes modalSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(16px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.modal-animate {
-  animation: modalSlideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-/* Spinner Animation */
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.spin-slow {
-  animation: spin 1s linear infinite;
-}
-
-/* Safe Area Insets for Mobile */
-.safe-padding-top {
-  padding-top: max(16px, env(safe-area-inset-top));
-}
-.safe-padding-bottom {
-  padding-bottom: max(16px, env(safe-area-inset-bottom));
-}
-
-/* High Contrast Scrollbars */
+/* Custom scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(0, 0, 0, 0.15);
   border-radius: 4px;
 }
