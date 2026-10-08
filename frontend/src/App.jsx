@@ -59,7 +59,8 @@ const ICONS = {
   copy: 'M8 4v12a2 2 0 002 2h8a2 2 0 002-2V8l-6-6H10a2 2 0 00-2 2z M4 8v12a2 2 0 002 2h10',
   shield: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z',
   download: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4 M7 10l5 5 5-5 M12 15V3',
-  bell: 'M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9 M13.73 21a2 2 0 0 1-3.46 0'
+  bell: 'M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9 M13.73 21a2 2 0 0 1-3.46 0',
+  shareIos: 'M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8 M16 6l-4-4-4 4 M12 2v13'
 };
 
 function Icon({ name, size = 22, color = colors.ink, stroke = 1.75 }) {
@@ -249,10 +250,10 @@ export default function App() {
   const [decided, setDecided] = useState(false);
   const [revokedCreds, setRevokedCreds] = useState(new Set());
 
-  // PWA Install Prompt State
+  // PWA Install Prompt & Modal State
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isInstalled, setIsInstalled] = useState(false);
-  const [installSuccessToast, setInstallSuccessToast] = useState(false);
+  const [showInstallModal, setShowInstallModal] = useState(false);
 
   // Zomato Inbox Verification Request State
   const [zomatoVerified, setZomatoVerified] = useState(false);
@@ -281,12 +282,11 @@ export default function App() {
       const { outcome } = await deferredPrompt.userChoice;
       if (outcome === 'accepted') {
         setIsInstalled(true);
+        setShowInstallModal(false);
       }
       setDeferredPrompt(null);
     } else {
-      // Direct user instruction toast for browsers without prompt event (e.g., iOS Safari or already installable)
-      setInstallSuccessToast(true);
-      setTimeout(() => setInstallSuccessToast(false), 3500);
+      setShowInstallModal(true);
     }
   };
 
@@ -349,26 +349,144 @@ export default function App() {
         position: 'relative'
       }}>
 
-        {/* PWA Install Notification Toast */}
-        {installSuccessToast && (
+        {/* PWA Install Instructions Modal Popup */}
+        {showInstallModal && (
           <div style={{
             position: 'fixed',
-            top: '16px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            backgroundColor: colors.ink,
-            color: '#FFFFFF',
-            padding: '10px 18px',
-            borderRadius: '10px',
-            fontSize: '13px',
-            zIndex: 9999,
-            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            inset: 0,
+            backgroundColor: 'rgba(28, 27, 25, 0.45)',
+            backdropFilter: 'blur(4px)',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px'
-          }}>
-            <Icon name="check" size={16} color={colors.ok} />
-            <span>To install: Tap browser menu (⋮ or Share) & select "Add to Home Screen"</span>
+            justifyContent: 'center',
+            padding: '20px',
+            zIndex: 9999
+          }}
+          onClick={() => setShowInstallModal(false)}
+          >
+            <div
+              style={{
+                width: '100%',
+                maxWidth: '380px',
+                backgroundColor: colors.surface,
+                borderRadius: '16px',
+                padding: '24px',
+                boxShadow: '0 12px 32px rgba(0,0,0,0.18)',
+                border: `1px solid ${colors.line}`,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Brand size={32} />
+                <button
+                  onClick={() => setShowInstallModal(false)}
+                  style={{
+                    border: 'none',
+                    background: 'none',
+                    cursor: 'pointer',
+                    padding: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: colors.muted
+                  }}
+                >
+                  <Icon name="x" size={18} color={colors.muted} />
+                </button>
+              </div>
+
+              <div>
+                <h3 style={{ fontSize: '18px', fontWeight: 600, color: colors.ink, margin: '0 0 4px' }}>
+                  Install GigWallet App
+                </h3>
+                <p style={{ fontSize: '13px', color: colors.muted, margin: 0, lineHeight: 1.4 }}>
+                  Install to remove the browser address bar, run fullscreen, and access your verifiable credentials offline.
+                </p>
+              </div>
+
+              <div style={{
+                backgroundColor: colors.bg,
+                padding: '14px',
+                borderRadius: '10px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                  <div style={{
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '12px',
+                    backgroundColor: colors.surface,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    color: colors.brand,
+                    flexShrink: 0,
+                    border: `1px solid ${colors.line}`
+                  }}>
+                    1
+                  </div>
+                  <div style={{ fontSize: '12px', color: colors.ink, lineHeight: 1.4 }}>
+                    Tap the browser menu <strong>(⋮)</strong> or iOS Share icon <Icon name="shareIos" size={14} color={colors.ink} stroke={2} />
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                  <div style={{
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '12px',
+                    backgroundColor: colors.surface,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    color: colors.brand,
+                    flexShrink: 0,
+                    border: `1px solid ${colors.line}`
+                  }}>
+                    2
+                  </div>
+                  <div style={{ fontSize: '12px', color: colors.ink, lineHeight: 1.4 }}>
+                    Select <strong>"Install app"</strong> or <strong>"Add to Home Screen"</strong>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                  <div style={{
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '12px',
+                    backgroundColor: colors.surface,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    color: colors.brand,
+                    flexShrink: 0,
+                    border: `1px solid ${colors.line}`
+                  }}>
+                    3
+                  </div>
+                  <div style={{ fontSize: '12px', color: colors.ink, lineHeight: 1.4 }}>
+                    Launch from your Home Screen for a clean, distraction-free app experience.
+                  </div>
+                </div>
+              </div>
+
+              <Button
+                label="Got it"
+                onClick={() => setShowInstallModal(false)}
+              />
+            </div>
           </div>
         )}
         
