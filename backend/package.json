@@ -1,0 +1,14 @@
+{
+  "name": "gigpass-backend",
+  "version": "1.0.0",
+  "description": "Backend API for W3C Verifiable Credentials issuance, signing, verification, and revocation registry",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node test_vc.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  }
+}

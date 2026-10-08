@@ -7,6 +7,33 @@ For the comprehensive system design, credential schemas, cryptographic workflows
 
 ---
 
+## Quick Start
+
+### 1. Run the Cryptographic Engine and Backend Server
+
+```bash
+cd backend
+npm install
+node test_vc.js   # Runs the 7 W3C cryptographic and security verification tests
+npm start          # Starts Express API server on http://localhost:4000
+```
+
+### 2. Run the Worker Wallet & Verifier Web Portal
+
+```bash
+cd frontend
+npm install
+npm run dev        # Starts Vite UI on http://localhost:5173
+```
+
+The frontend includes four interactive views:
+- Split-Screen Demo: Side-by-side presentation of the worker mobile phone and the onboarding desk scanner.
+- Worker Mobile Wallet: Realistic mobile frame displaying verified credentials, composite rating, and dynamic presentation QR.
+- Mock Issuer Portals: Swiggy, Uber, and NSDC portals to test issuance and simulate revocation.
+- Platform Verifier: Onboarding scanner with signature audit trails, tamper detection test, and automated Gold Tier fast-tracking.
+
+---
+
 # Repository Guidelines and Collaboration Rules
 
 Welcome to the CodeFiesta repository. All contributors and team members must follow the rules below to maintain code quality, avoid merge conflicts, and ensure smooth collaboration throughout the hackathon.

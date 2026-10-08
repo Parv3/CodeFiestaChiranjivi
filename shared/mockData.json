@@ -1,0 +1,55 @@
+{
+  "worker": {
+    "name": "Ramesh Kumar",
+    "phone": "+91 98765 43210",
+    "did": "did:key:z6MkrWorkerRamesh2026Ed25519PublicAddress",
+    "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"
+  },
+  "issuers": {
+    "swiggy": {
+      "name": "Swiggy Delivery Partner Platform",
+      "did": "did:key:z6MkuwSwiggyDeliveryIssuerDid2026",
+      "domain": "partner.swiggy.com",
+      "role": "Food & Quick Commerce Delivery"
+    },
+    "uber": {
+      "name": "Uber Mobility Partner Fleet",
+      "did": "did:key:z6MkuwUberDriverMobilityIssuerDid2026",
+      "domain": "drivers.uber.com",
+      "role": "Rideshare Mobility"
+    },
+    "nsdc": {
+      "name": "National Skill Development Corporation (NSDC)",
+      "did": "did:key:z6MkuwSkillIndiaGovtAuthorityDid2026",
+      "domain": "skillindia.gov.in",
+      "role": "Government Certification Authority"
+    }
+  },
+  "sampleClaims": {
+    "swiggy": {
+      "platform": "Swiggy",
+      "lifetimeDeliveries": 3240,
+      "averageRating": 4.92,
+      "onTimeDeliveryRate": "98.4%",
+      "tenureMonths": 26,
+      "standing": "Top Tier Partner",
+      "badge": "Gold Delivery Specialist"
+    },
+    "uber": {
+      "platform": "Uber",
+      "completedTrips": 1420,
+      "averageRating": 4.88,
+      "safetyIncidentCount": 0,
+      "tenureMonths": 14,
+      "standing": "Diamond Driver",
+      "badge": "Premier Safe Driver"
+    },
+    "nsdc": {
+      "certifyingBody": "National Skill Development Corporation",
+      "qualification": "Commercial Two-Wheeler Operations and Road Safety Level 2",
+      "grade": "Distinction",
+      "verificationStatus": "Government Verified",
+      "certificateId": "NSDC-2026-DL-77291"
+    }
+  }
+}
