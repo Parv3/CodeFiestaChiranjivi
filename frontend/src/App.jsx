@@ -226,8 +226,14 @@ function CameraScanner({ onScanSuccess, onScanError }) {
         html5QrCodeRef.current = html5QrCode;
 
         const config = {
-          fps: 15,
-          qrbox: { width: 240, height: 240 },
+          fps: 20,
+          qrbox: (viewfinderWidth, viewfinderHeight) => {
+            const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+            return {
+              width: Math.floor(minEdge * 0.75),
+              height: Math.floor(minEdge * 0.75)
+            };
+          },
           aspectRatio: 1.0
         };
 
@@ -458,36 +464,47 @@ const CREDENTIAL_STORE = {
 /**
  * Compact, cryptographically signed Presentation payload that fits comfortably in standard QR limits (< 900 chars).
  */
+/**
+ * Ultra-compact Verifiable Presentation format (< 120 chars)
+ * Designed for instantaneous detection by any phone camera or webcam lens.
+ */
 function createVerifiablePresentation(selectedKeys, isTampered = false) {
-  const vcs = selectedKeys.map((key) => {
-    const raw = CREDENTIAL_STORE[key];
+  const flags = selectedKeys.join(',');
+  const tamperedFlag = isTampered ? '1' : '0';
+  const nonce = Date.now().toString(36).slice(-6).toUpperCase();
+  // Format: GW-VP:v1:<holderDidShort>:<selectedCreds>:<tampered>:<nonce>:<sig>
+  const sig = isTampered ? 'ERR_SIG_FAIL' : 'OK_ED25519_VALID';
+  return `GW-VP:v1:Ramesh:${flags}:${tamperedFlag}:${nonce}:${sig}`;
+}
+
+/**
+ * Parses either the compact URI string (GW-VP:...) or raw JSON payload
+ */
+function parsePresentationPayload(rawString) {
+  if (rawString.startsWith('GW-VP:v1:')) {
+    const parts = rawString.split(':');
+    const holder = parts[2] || 'Ramesh Kumar';
+    const creds = (parts[3] || 'swiggy,uber,nsdc').split(',');
+    const isTampered = parts[4] === '1';
+    const nonce = parts[5] || 'VP-OK';
     return {
-      id: raw.id,
-      issuer: raw.issuer,
-      name: raw.issuerName,
-      type: raw.type[1],
-      claims: {
-        ...(key === 'swiggy' ? { deliveries: 3240, rating: 4.92, tenure: '26m' } : {}),
-        ...(key === 'uber' ? { trips: 1420, rating: isTampered ? 5.0 : 4.88, safety: 0 } : {}),
-        ...(key === 'nsdc' ? { cert: 'NSDC-2026-DL-77291', grade: 'Distinction' } : {})
-      },
-      sig: isTampered && key === 'uber' ? 'INVALID_TAMPERED' : raw.proof.jws.slice(-16)
+      holderName: holder === 'Ramesh' ? 'Ramesh Kumar' : holder,
+      nonce: nonce,
+      hasTamper: isTampered,
+      credentials: creds
     };
-  });
+  }
 
-  const presentation = {
-    t: 'W3C-VP',
-    holder: 'did:key:z6MkrWorkerRamesh2026Ed25519PublicAddress',
-    holderName: 'Ramesh Kumar',
-    nonce: 'VP-' + Date.now().toString(36).toUpperCase(),
-    vcs,
-    proof: {
-      type: 'Ed25519',
-      sig: isTampered ? 'CORRUPT_VP_SIG' : 'VALID_WORKER_SIG_7F31A'
-    }
+  // Fallback for JSON
+  const parsed = JSON.parse(rawString);
+  const hasTamper = parsed.proof?.sig === 'CORRUPT_VP_SIG' ||
+    parsed.vcs?.some(v => v.sig === 'INVALID_TAMPERED');
+  return {
+    holderName: parsed.holderName || 'Ramesh Kumar',
+    nonce: parsed.nonce || 'VP-VALID',
+    hasTamper,
+    credentials: parsed.vcs?.map(v => v.type) || ['swiggy', 'uber', 'nsdc']
   };
-
-  return JSON.stringify(presentation);
 }
 
 const INITIAL_SNAPSHOT = {
@@ -1025,17 +1042,14 @@ export default function App() {
                     <CameraScanner
                       onScanSuccess={(decodedText) => {
                         try {
-                          const parsed = JSON.parse(decodedText);
-                          setLastScannedPayload(parsed);
-                          const hasTamper = parsed.proof?.signatureValue === 'CORRUPT_VP_SIG' ||
-                            parsed.verifiableCredential?.some(c => c.proof?.jws?.includes('INVALID_SIGNATURE_TAMPERED'));
-                          setVerifyScenario(hasTamper ? 'rejected' : 'verified');
+                          const result = parsePresentationPayload(decodedText);
+                          setLastScannedPayload(result);
+                          setVerifyScenario(result.hasTamper ? 'rejected' : 'verified');
                           setShowScannerModal(false);
                         } catch (err) {
-                          // If raw string or custom QR
                           setScannerRawInput(decodedText);
                           setScannerMode('paste');
-                          setScannerScanError('Scanned text is not standard JSON. You can review and verify manually.');
+                          setScannerScanError('Payload detected but could not be parsed: ' + err.message);
                         }
                       }}
                       onScanError={() => {}}
@@ -1062,7 +1076,7 @@ export default function App() {
                         onClick={() => {
                           const payload = createVerifiablePresentation(['swiggy', 'uber', 'nsdc'], false);
                           setScannerRawInput(payload);
-                          setLastScannedPayload(JSON.parse(payload));
+                          setLastScannedPayload(parsePresentationPayload(payload));
                           setVerifyScenario('verified');
                           setShowScannerModal(false);
                         }}
@@ -1084,7 +1098,7 @@ export default function App() {
                         onClick={() => {
                           const payload = createVerifiablePresentation(['swiggy', 'uber', 'nsdc'], true);
                           setScannerRawInput(payload);
-                          setLastScannedPayload(JSON.parse(payload));
+                          setLastScannedPayload(parsePresentationPayload(payload));
                           setVerifyScenario('rejected');
                           setShowScannerModal(false);
                         }}
@@ -1107,7 +1121,7 @@ export default function App() {
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <label style={{ fontSize: '12px', fontWeight: 600, color: colors.ink }}>
-                      Raw QR Payload (JSON):
+                      Raw QR Payload:
                     </label>
                     <textarea
                       value={scannerRawInput}
@@ -1115,7 +1129,7 @@ export default function App() {
                         setScannerRawInput(e.target.value);
                         setScannerScanError('');
                       }}
-                      placeholder="Paste VP JSON payload from QR scanner..."
+                      placeholder="Paste VP URI string or JSON payload..."
                       rows={4}
                       style={{
                         width: '100%',
@@ -1153,14 +1167,12 @@ export default function App() {
                           setScannerScanError('Please paste or scan a QR payload first.');
                           return;
                         }
-                        const parsed = JSON.parse(scannerRawInput);
-                        setLastScannedPayload(parsed);
-                        const hasTamper = parsed.proof?.signatureValue === 'CORRUPT_VP_SIG' ||
-                          parsed.verifiableCredential?.some(c => c.proof?.jws?.includes('INVALID_SIGNATURE_TAMPERED'));
-                        setVerifyScenario(hasTamper ? 'rejected' : 'verified');
+                        const result = parsePresentationPayload(scannerRawInput.trim());
+                        setLastScannedPayload(result);
+                        setVerifyScenario(result.hasTamper ? 'rejected' : 'verified');
                         setShowScannerModal(false);
                       } catch (err) {
-                        setScannerScanError('Invalid JSON format. Please ensure valid QR payload.');
+                        setScannerScanError('Invalid payload format: ' + err.message);
                       }
                     }}
                   />
