@@ -212,39 +212,65 @@ function shortDid(did) {
  */
 function CameraScanner({ onScanSuccess, onScanError }) {
   const scannerRef = useRef(null);
+  const [initError, setInitError] = useState(null);
 
   useEffect(() => {
-    const scanner = new Html5QrcodeScanner(
-      'qr-reader-container',
-      {
-        fps: 10,
-        qrbox: { width: 250, height: 250 },
-        rememberLastUsedCamera: true,
-        supportedScanTypes: [0] // Html5QrcodeScanType.SCAN_TYPE_CAMERA
-      },
-      false
-    );
+    let isMounted = true;
 
-    scanner.render(
-      (decodedText) => {
-        if (onScanSuccess) {
-          onScanSuccess(decodedText);
-        }
-      },
-      (error) => {
-        // Continuous non-critical scan frame errors can be ignored
-        if (onScanError) onScanError(error);
+    // Small delay to ensure the container element is painted in the DOM
+    const timeout = setTimeout(() => {
+      try {
+        const element = document.getElementById('qr-reader-container');
+        if (!element || !isMounted) return;
+
+        const scanner = new Html5QrcodeScanner(
+          'qr-reader-container',
+          {
+            fps: 10,
+            qrbox: { width: 220, height: 220 },
+            rememberLastUsedCamera: true
+          },
+          false
+        );
+
+        scanner.render(
+          (decodedText) => {
+            if (isMounted && onScanSuccess) {
+              onScanSuccess(decodedText);
+            }
+          },
+          (error) => {
+            if (isMounted && onScanError) {
+              onScanError(error);
+            }
+          }
+        );
+
+        scannerRef.current = scanner;
+      } catch (err) {
+        console.error("Camera init error:", err);
+        if (isMounted) setInitError(err.message || 'Unable to access camera');
       }
-    );
-
-    scannerRef.current = scanner;
+    }, 100);
 
     return () => {
+      isMounted = false;
+      clearTimeout(timeout);
       if (scannerRef.current) {
-        scannerRef.current.clear().catch(() => {});
+        try {
+          scannerRef.current.clear().catch(() => {});
+        } catch (_) {}
       }
     };
   }, []);
+
+  if (initError) {
+    return (
+      <div style={{ padding: '16px', color: colors.bad, textAlign: 'center', fontSize: '13px' }}>
+        Camera permission required or unavailable ({initError}). Please use the simulator below.
+      </div>
+    );
+  }
 
   return (
     <div style={{ width: '100%', overflow: 'hidden', borderRadius: '12px' }}>
