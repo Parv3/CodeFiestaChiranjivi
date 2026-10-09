@@ -60,7 +60,9 @@ const ICONS = {
   shield: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z',
   download: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4 M7 10l5 5 5-5 M12 15V3',
   bell: 'M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9 M13.73 21a2 2 0 0 1-3.46 0',
-  shareIos: 'M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8 M16 6l-4-4-4 4 M12 2v13'
+  shareIos: 'M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8 M16 6l-4-4-4 4 M12 2v13',
+  qr: 'M3 3h6v6H3zM15 3h6v6h-6zM3 15h6v6H3zM15 15h2v2h-2zM19 15h2v2h-2zM15 19h2v2h-2zM19 19h2v2h-2z',
+  camera: 'M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z M12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'
 };
 
 function Icon({ name, size = 22, color = colors.ink, stroke = 1.75 }) {
@@ -205,9 +207,126 @@ function shortDid(did) {
 }
 
 // Initial worker data matching gigwallet mock service
+// Master Mock Credentials according to W3C Verifiable Credentials Standard
+const CREDENTIAL_STORE = {
+  swiggy: {
+    id: 'urn:uuid:swiggy-vc-2026-99120',
+    type: ['VerifiableCredential', 'GigDeliveryCredential'],
+    issuer: 'did:key:z6MkuwSwiggyDeliveryIssuerDid2026',
+    issuerName: 'Swiggy Delivery Partner Platform',
+    issuanceDate: '2026-03-01T10:00:00Z',
+    expirationDate: '2027-03-01T10:00:00Z',
+    credentialSubject: {
+      id: 'did:key:z6MkrWorkerRamesh2026Ed25519PublicAddress',
+      platform: 'Swiggy',
+      lifetimeDeliveries: 3240,
+      averageRating: 4.92,
+      onTimeDeliveryRate: '98.4%',
+      tenureMonths: 26,
+      standing: 'Top Tier Partner',
+      badge: 'Gold Delivery Specialist'
+    },
+    proof: {
+      type: 'Ed25519Signature2020',
+      created: '2026-03-01T10:00:00Z',
+      verificationMethod: 'did:key:z6MkuwSwiggyDeliveryIssuerDid2026#key-1',
+      proofPurpose: 'assertionMethod',
+      jws: 'eyJhbGciOiJFZERTQSI...SwiggyEd25519ValidSig'
+    }
+  },
+  uber: {
+    id: 'urn:uuid:uber-vc-2026-88410',
+    type: ['VerifiableCredential', 'RideshareMobilityCredential'],
+    issuer: 'did:key:z6MkuwUberDriverMobilityIssuerDid2026',
+    issuerName: 'Uber Mobility Partner Fleet',
+    issuanceDate: '2026-02-15T09:30:00Z',
+    expirationDate: '2027-02-15T09:30:00Z',
+    credentialSubject: {
+      id: 'did:key:z6MkrWorkerRamesh2026Ed25519PublicAddress',
+      platform: 'Uber',
+      completedTrips: 1420,
+      averageRating: 4.88,
+      safetyIncidentCount: 0,
+      tenureMonths: 14,
+      standing: 'Diamond Driver',
+      badge: 'Premier Safe Driver'
+    },
+    proof: {
+      type: 'Ed25519Signature2020',
+      created: '2026-02-15T09:30:00Z',
+      verificationMethod: 'did:key:z6MkuwUberDriverMobilityIssuerDid2026#key-1',
+      proofPurpose: 'assertionMethod',
+      jws: 'eyJhbGciOiJFZERTQSI...UberEd25519ValidSig'
+    }
+  },
+  nsdc: {
+    id: 'urn:uuid:nsdc-vc-2026-77291',
+    type: ['VerifiableCredential', 'GovernmentSkillCertification'],
+    issuer: 'did:key:z6MkuwSkillIndiaGovtAuthorityDid2026',
+    issuerName: 'National Skill Development Corporation (NSDC)',
+    issuanceDate: '2025-11-20T14:15:00Z',
+    expirationDate: '2028-11-20T14:15:00Z',
+    credentialSubject: {
+      id: 'did:key:z6MkrWorkerRamesh2026Ed25519PublicAddress',
+      certifyingBody: 'National Skill Development Corporation',
+      qualification: 'Commercial Two-Wheeler Operations and Road Safety Level 2',
+      grade: 'Distinction',
+      verificationStatus: 'Government Verified',
+      certificateId: 'NSDC-2026-DL-77291'
+    },
+    proof: {
+      type: 'Ed25519Signature2020',
+      created: '2025-11-20T14:15:00Z',
+      verificationMethod: 'did:key:z6MkuwSkillIndiaGovtAuthorityDid2026#key-1',
+      proofPurpose: 'assertionMethod',
+      jws: 'eyJhbGciOiJFZERTQSI...SkillIndiaGovtEd25519ValidSig'
+    }
+  }
+};
+
+/**
+ * Builds a standardized W3C Verifiable Presentation (VP) JSON object.
+ */
+function createVerifiablePresentation(selectedKeys, isTampered = false) {
+  const vcs = selectedKeys.map((key) => {
+    const cred = JSON.parse(JSON.stringify(CREDENTIAL_STORE[key]));
+    if (isTampered && key === 'uber') {
+      // Tamper rating from 4.88 to 5.00 without valid keyholder re-sign
+      cred.credentialSubject.averageRating = 5.0;
+      cred.credentialSubject.tampered = true;
+      cred.proof.jws = 'INVALID_SIGNATURE_TAMPERED';
+    }
+    return cred;
+  });
+
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + 60 * 1000); // 60s validity window
+
+  const presentation = {
+    '@context': ['https://www.w3.org/2018/credentials/v1'],
+    type: ['VerifiablePresentation'],
+    holder: 'did:key:z6MkrWorkerRamesh2026Ed25519PublicAddress',
+    holderName: 'Ramesh Kumar',
+    nonce: Math.random().toString(36).substring(2, 10).toUpperCase(),
+    issuedAt: now.toISOString(),
+    expiresAt: expiresAt.toISOString(),
+    verifiableCredential: vcs,
+    proof: {
+      type: 'Ed25519Signature2020',
+      created: now.toISOString(),
+      challenge: 'zomato-onboarding-challenge-' + now.getTime(),
+      proofPurpose: 'authentication',
+      verificationMethod: 'did:key:z6MkrWorkerRamesh2026Ed25519PublicAddress#key-1',
+      signatureValue: isTampered ? 'CORRUPT_VP_SIG' : 'VALID_WORKER_ED25519_PRESENTATION_SIGNATURE'
+    }
+  };
+
+  return JSON.stringify(presentation);
+}
+
 const INITIAL_SNAPSHOT = {
   holderName: 'Ramesh Kumar',
-  did: 'did:key:z6MkrWorkerPublicKeyHexExampleW4pQ',
+  did: 'did:key:z6MkrWorkerRamesh2026Ed25519PublicAddress',
   revocationCheckedAt: '2 hours ago',
   reputation: {
     rating: 4.91,
@@ -249,6 +368,15 @@ export default function App() {
   const [copied, setCopied] = useState(false);
   const [decided, setDecided] = useState(false);
   const [revokedCreds, setRevokedCreds] = useState(new Set());
+
+  // Presentation QR Code Modal
+  const [showQrModal, setShowQrModal] = useState(false);
+
+  // QR Scanner Modal on Verifier Desk
+  const [showScannerModal, setShowScannerModal] = useState(false);
+  const [scannerRawInput, setScannerRawInput] = useState('');
+  const [scannerScanError, setScannerScanError] = useState('');
+  const [lastScannedPayload, setLastScannedPayload] = useState(null);
 
   // PWA Install Prompt & Modal State
   const [deferredPrompt, setDeferredPrompt] = useState(null);
@@ -489,6 +617,311 @@ export default function App() {
             </div>
           </div>
         )}
+
+        {/* FULLSCREEN / POPUP PRESENTATION QR CODE MODAL */}
+        {showQrModal && (
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              backgroundColor: 'rgba(28, 27, 25, 0.65)',
+              backdropFilter: 'blur(5px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '16px',
+              zIndex: 9999
+            }}
+            onClick={() => setShowQrModal(false)}
+          >
+            <div
+              style={{
+                width: '100%',
+                maxWidth: '400px',
+                backgroundColor: colors.surface,
+                borderRadius: '20px',
+                padding: '24px',
+                boxShadow: '0 16px 40px rgba(0,0,0,0.25)',
+                border: `1px solid ${colors.line}`,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px',
+                alignItems: 'center',
+                textAlign: 'center'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Brand size={26} suffix="QR Present" />
+                <button
+                  onClick={() => setShowQrModal(false)}
+                  style={{
+                    border: 'none',
+                    background: 'none',
+                    cursor: 'pointer',
+                    padding: '4px',
+                    color: colors.muted
+                  }}
+                >
+                  <Icon name="x" size={20} color={colors.muted} />
+                </button>
+              </div>
+
+              <div>
+                <h3 style={{ fontSize: '19px', fontWeight: 700, color: colors.ink, margin: '0 0 4px' }}>
+                  Verifiable Presentation
+                </h3>
+                <p style={{ fontSize: '13px', color: colors.muted, margin: 0 }}>
+                  Show this signed cryptographic QR to the onboarding verifier desk.
+                </p>
+              </div>
+
+              {/* High Contrast QR Code with Quiet Zone */}
+              <div
+                style={{
+                  backgroundColor: '#FFFFFF',
+                  padding: '16px',
+                  borderRadius: '14px',
+                  border: `2px solid ${colors.lineStrong}`,
+                  boxShadow: '0 4px 14px rgba(0,0,0,0.06)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <QRCodeSVG
+                  value={createVerifiablePresentation(picked, verifyScenario === 'rejected')}
+                  size={240}
+                  level="M"
+                  fgColor="#000000"
+                  bgColor="#FFFFFF"
+                />
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: colors.muted }}>
+                <Dot on={true} />
+                <span>Expires in <strong style={{ color: colors.ink }}>0:{countdown < 10 ? `0${countdown}` : countdown}</strong> (auto-rotates nonce)</span>
+              </div>
+
+              <div style={{
+                width: '100%',
+                backgroundColor: colors.bg,
+                padding: '10px 14px',
+                borderRadius: '8px',
+                fontSize: '12px',
+                color: colors.muted,
+                textAlign: 'left'
+              }}>
+                <div style={{ fontWeight: 600, color: colors.ink, marginBottom: '2px' }}>Included Credentials:</div>
+                {picked.map(p => (
+                  <span key={p} style={{
+                    display: 'inline-block',
+                    marginRight: '6px',
+                    padding: '2px 8px',
+                    backgroundColor: colors.surface,
+                    borderRadius: '4px',
+                    border: `1px solid ${colors.line}`,
+                    fontWeight: 500,
+                    fontSize: '11px',
+                    color: colors.brand
+                  }}>
+                    {p.toUpperCase()}
+                  </span>
+                ))}
+              </div>
+
+              <div style={{ width: '100%', display: 'flex', gap: '8px' }}>
+                <Button
+                  label="Refresh"
+                  variant="secondary"
+                  onClick={() => setCountdown(60)}
+                />
+                <Button
+                  label="Open Verifier Desk"
+                  onClick={() => {
+                    setShowQrModal(false);
+                    setTab('verify');
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* VERIFIER QR SCANNER MODAL */}
+        {showScannerModal && (
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              backgroundColor: 'rgba(28, 27, 25, 0.65)',
+              backdropFilter: 'blur(5px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '16px',
+              zIndex: 9999
+            }}
+            onClick={() => setShowScannerModal(false)}
+          >
+            <div
+              style={{
+                width: '100%',
+                maxWidth: '480px',
+                backgroundColor: colors.surface,
+                borderRadius: '20px',
+                padding: '24px',
+                boxShadow: '0 16px 40px rgba(0,0,0,0.25)',
+                border: `1px solid ${colors.line}`,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Icon name="camera" size={20} color={colors.brand} />
+                  <span style={{ fontWeight: 700, fontSize: '16px', color: colors.ink }}>Scan Worker QR Code</span>
+                </div>
+                <button
+                  onClick={() => setShowScannerModal(false)}
+                  style={{
+                    border: 'none',
+                    background: 'none',
+                    cursor: 'pointer',
+                    padding: '4px',
+                    color: colors.muted
+                  }}
+                >
+                  <Icon name="x" size={20} color={colors.muted} />
+                </button>
+              </div>
+
+              <p style={{ fontSize: '13px', color: colors.muted, margin: 0, lineHeight: 1.4 }}>
+                Point the platform camera at the worker's GigWallet QR code or paste the raw Verifiable Presentation payload below.
+              </p>
+
+              {/* Fast Instant Scanner Simulation Buttons */}
+              <div style={{
+                backgroundColor: colors.bg,
+                padding: '14px',
+                borderRadius: '12px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px'
+              }}>
+                <span style={{ fontSize: '12px', fontWeight: 600, color: colors.muted }}>Instant Scanner Simulator:</span>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    onClick={() => {
+                      const payload = createVerifiablePresentation(['swiggy', 'uber', 'nsdc'], false);
+                      setScannerRawInput(payload);
+                      setLastScannedPayload(JSON.parse(payload));
+                      setVerifyScenario('verified');
+                      setShowScannerModal(false);
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: '8px 12px',
+                      borderRadius: '8px',
+                      backgroundColor: colors.okTint,
+                      border: `1px solid ${colors.ok}`,
+                      color: colors.ok,
+                      fontWeight: 600,
+                      fontSize: '12px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Scan Valid QR
+                  </button>
+                  <button
+                    onClick={() => {
+                      const payload = createVerifiablePresentation(['swiggy', 'uber', 'nsdc'], true);
+                      setScannerRawInput(payload);
+                      setLastScannedPayload(JSON.parse(payload));
+                      setVerifyScenario('rejected');
+                      setShowScannerModal(false);
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: '8px 12px',
+                      borderRadius: '8px',
+                      backgroundColor: colors.badTint,
+                      border: `1px solid ${colors.bad}`,
+                      color: colors.bad,
+                      fontWeight: 600,
+                      fontSize: '12px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Scan Tampered QR
+                  </button>
+                </div>
+              </div>
+
+              {/* Textarea for manual payload input or camera reader stream */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '12px', fontWeight: 600, color: colors.ink }}>
+                  Raw QR Payload (JSON / Verifiable Presentation):
+                </label>
+                <textarea
+                  value={scannerRawInput}
+                  onChange={(e) => {
+                    setScannerRawInput(e.target.value);
+                    setScannerScanError('');
+                  }}
+                  placeholder="Paste VP JSON payload from QR scanner..."
+                  rows={5}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    borderRadius: '8px',
+                    border: `1px solid ${colors.line}`,
+                    fontFamily: 'JetBrains Mono, monospace',
+                    fontSize: '11px',
+                    color: colors.ink,
+                    resize: 'vertical',
+                    boxSizing: 'border-box'
+                  }}
+                />
+                {scannerScanError && (
+                  <span style={{ fontSize: '12px', color: colors.bad, fontWeight: 500 }}>
+                    {scannerScanError}
+                  </span>
+                )}
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <Button
+                  label="Cancel"
+                  variant="secondary"
+                  onClick={() => setShowScannerModal(false)}
+                />
+                <Button
+                  label="Verify Scanned Payload"
+                  onClick={() => {
+                    try {
+                      if (!scannerRawInput.trim()) {
+                        setScannerScanError('Please paste or scan a QR payload first.');
+                        return;
+                      }
+                      const parsed = JSON.parse(scannerRawInput);
+                      setLastScannedPayload(parsed);
+                      // Check for tamper
+                      const hasTamper = parsed.proof?.signatureValue === 'CORRUPT_VP_SIG' ||
+                        parsed.verifiableCredential?.some(c => c.proof?.jws?.includes('INVALID_SIGNATURE_TAMPERED'));
+                      setVerifyScenario(hasTamper ? 'rejected' : 'verified');
+                      setShowScannerModal(false);
+                    } catch (err) {
+                      setScannerScanError('Invalid JSON format. Please ensure valid QR payload.');
+                    }
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
         
         {/* Main Scrollable Body */}
         <div style={{
@@ -703,9 +1136,17 @@ export default function App() {
           </div>
         </div>
 
-        {/* Primary CTA */}
-        <div style={{ marginTop: '24px' }}>
-          <Button label="Share my reputation" onClick={() => setTab('share')} />
+        {/* Primary CTAs */}
+        <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <Button
+            label="Present QR Code"
+            onClick={() => setShowQrModal(true)}
+          />
+          <Button
+            label="Share my reputation (Customize)"
+            variant="secondary"
+            onClick={() => setTab('share')}
+          />
         </div>
       </div>
     );
@@ -714,7 +1155,7 @@ export default function App() {
   /* TAB 2: SHARE REPUTATION WITH DYNAMIC QR */
   function renderShareScreen() {
     const valid = INITIAL_SNAPSHOT.credentials;
-    const qrPayload = `GW1:SAMPLE-${picked.join('-').toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
+    const vpPayload = createVerifiablePresentation(picked, verifyScenario === 'rejected');
 
     return (
       <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -738,15 +1179,16 @@ export default function App() {
           gap: '14px'
         }}>
           <div style={{
-            padding: '12px',
+            padding: '14px',
             backgroundColor: '#FFFFFF',
-            borderRadius: '8px',
+            borderRadius: '12px',
+            border: `1px solid ${colors.lineStrong}`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center'
           }}>
             <QRCodeSVG
-              value={qrPayload}
+              value={vpPayload}
               size={210}
               level="M"
               fgColor="#111111"
@@ -802,12 +1244,17 @@ export default function App() {
         {/* Action Button */}
         <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <Button
+            label="Fullscreen Presenter QR"
+            onClick={() => setShowQrModal(true)}
+          />
+          <Button
             label="Refresh code"
             variant="secondary"
             onClick={() => setCountdown(60)}
           />
           <Button
-            label="Simulate Platform Verifier Scan"
+            label="Scan on Verifier Desk"
+            variant="secondary"
             onClick={() => {
               setVerifyScenario('verified');
               setTab('verify');
@@ -1078,6 +1525,94 @@ export default function App() {
             <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: colors.zomato }} />
             Zomato Onboarding
           </div>
+        </div>
+
+        {/* Scan QR Button & Verification Controls */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px',
+          marginBottom: '20px'
+        }}>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              onClick={() => {
+                setScannerScanError('');
+                setShowScannerModal(true);
+              }}
+              style={{
+                flex: 1,
+                height: '44px',
+                borderRadius: '10px',
+                backgroundColor: colors.brand,
+                color: colors.onBrand,
+                border: 'none',
+                fontWeight: 600,
+                fontSize: '14px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                cursor: 'pointer',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.08)'
+              }}
+            >
+              <Icon name="camera" size={18} color="#FFFFFF" />
+              <span>Scan Worker QR / Camera</span>
+            </button>
+            <button
+              onClick={() => {
+                // Instantly re-verify current wallet selection
+                const payload = createVerifiablePresentation(picked, false);
+                setLastScannedPayload(JSON.parse(payload));
+                setVerifyScenario('verified');
+              }}
+              title="Quick scan from current device wallet"
+              style={{
+                padding: '0 16px',
+                height: '44px',
+                borderRadius: '10px',
+                backgroundColor: colors.surface,
+                color: colors.brand,
+                border: `1.5px solid ${colors.brand}`,
+                fontWeight: 600,
+                fontSize: '13px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer'
+              }}
+            >
+              Scan Active Wallet
+            </button>
+          </div>
+
+          {lastScannedPayload && (
+            <div style={{
+              backgroundColor: colors.surface,
+              border: `1px solid ${colors.line}`,
+              borderRadius: '8px',
+              padding: '8px 12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              fontSize: '12px'
+            }}>
+              <span style={{ color: colors.muted }}>
+                Scanned Holder: <strong style={{ color: colors.ink }}>{lastScannedPayload.holderName || 'Ramesh Kumar'}</strong>
+              </span>
+              <span style={{
+                fontFamily: 'JetBrains Mono, monospace',
+                fontSize: '11px',
+                color: colors.brand,
+                backgroundColor: colors.bg,
+                padding: '2px 6px',
+                borderRadius: '4px'
+              }}>
+                Nonce: {lastScannedPayload.nonce || 'VP-VALID'}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Scenario Toggle */}
