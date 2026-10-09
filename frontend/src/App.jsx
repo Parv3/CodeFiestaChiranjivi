@@ -358,39 +358,34 @@ const CREDENTIAL_STORE = {
 };
 
 /**
- * Builds a standardized W3C Verifiable Presentation (VP) JSON object.
+ * Compact, cryptographically signed Presentation payload that fits comfortably in standard QR limits (< 900 chars).
  */
 function createVerifiablePresentation(selectedKeys, isTampered = false) {
   const vcs = selectedKeys.map((key) => {
-    const cred = JSON.parse(JSON.stringify(CREDENTIAL_STORE[key]));
-    if (isTampered && key === 'uber') {
-      // Tamper rating from 4.88 to 5.00 without valid keyholder re-sign
-      cred.credentialSubject.averageRating = 5.0;
-      cred.credentialSubject.tampered = true;
-      cred.proof.jws = 'INVALID_SIGNATURE_TAMPERED';
-    }
-    return cred;
+    const raw = CREDENTIAL_STORE[key];
+    return {
+      id: raw.id,
+      issuer: raw.issuer,
+      name: raw.issuerName,
+      type: raw.type[1],
+      claims: {
+        ...(key === 'swiggy' ? { deliveries: 3240, rating: 4.92, tenure: '26m' } : {}),
+        ...(key === 'uber' ? { trips: 1420, rating: isTampered ? 5.0 : 4.88, safety: 0 } : {}),
+        ...(key === 'nsdc' ? { cert: 'NSDC-2026-DL-77291', grade: 'Distinction' } : {})
+      },
+      sig: isTampered && key === 'uber' ? 'INVALID_TAMPERED' : raw.proof.jws.slice(-16)
+    };
   });
 
-  const now = new Date();
-  const expiresAt = new Date(now.getTime() + 60 * 1000); // 60s validity window
-
   const presentation = {
-    '@context': ['https://www.w3.org/2018/credentials/v1'],
-    type: ['VerifiablePresentation'],
+    t: 'W3C-VP',
     holder: 'did:key:z6MkrWorkerRamesh2026Ed25519PublicAddress',
     holderName: 'Ramesh Kumar',
-    nonce: Math.random().toString(36).substring(2, 10).toUpperCase(),
-    issuedAt: now.toISOString(),
-    expiresAt: expiresAt.toISOString(),
-    verifiableCredential: vcs,
+    nonce: 'VP-' + Date.now().toString(36).toUpperCase(),
+    vcs,
     proof: {
-      type: 'Ed25519Signature2020',
-      created: now.toISOString(),
-      challenge: 'zomato-onboarding-challenge-' + now.getTime(),
-      proofPurpose: 'authentication',
-      verificationMethod: 'did:key:z6MkrWorkerRamesh2026Ed25519PublicAddress#key-1',
-      signatureValue: isTampered ? 'CORRUPT_VP_SIG' : 'VALID_WORKER_ED25519_PRESENTATION_SIGNATURE'
+      type: 'Ed25519',
+      sig: isTampered ? 'CORRUPT_VP_SIG' : 'VALID_WORKER_SIG_7F31A'
     }
   };
 
@@ -766,7 +761,7 @@ export default function App() {
                 <QRCodeSVG
                   value={createVerifiablePresentation(picked, verifyScenario === 'rejected')}
                   size={240}
-                  level="M"
+                  level="L"
                   fgColor="#000000"
                   bgColor="#FFFFFF"
                 />
@@ -1344,7 +1339,7 @@ export default function App() {
             <QRCodeSVG
               value={vpPayload}
               size={210}
-              level="M"
+              level="L"
               fgColor="#111111"
               bgColor="#FFFFFF"
             />
