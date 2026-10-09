@@ -63,8 +63,11 @@ const ICONS = {
   bell: 'M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9 M13.73 21a2 2 0 0 1-3.46 0',
   shareIos: 'M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8 M16 6l-4-4-4 4 M12 2v13',
   qr: 'M3 3h6v6H3zM15 3h6v6h-6zM3 15h6v6H3zM15 15h2v2h-2zM19 15h2v2h-2zM15 19h2v2h-2zM19 19h2v2h-2z',
-  camera: 'M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z M12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'
+  camera: 'M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z M12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
+  userSwitch: 'M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M8.5 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z M17 11l3-3-3-3 M23 8h-6',
+  badge: 'M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76z'
 };
+
 
 function Icon({ name, size = 22, color = colors.ink, stroke = 1.75 }) {
   return (
@@ -461,20 +464,132 @@ const CREDENTIAL_STORE = {
   }
 };
 
-/**
- * Compact, cryptographically signed Presentation payload that fits comfortably in standard QR limits (< 900 chars).
- */
+// Multi-Worker Profile Directory
+const WORKER_PROFILES = {
+  ramesh: {
+    id: 'ramesh',
+    holderName: 'Ramesh Kumar',
+    did: 'did:key:z6MkrWorkerRamesh2026Ed25519PublicAddress',
+    roleTag: 'Veteran Food & Mobility Partner',
+    avatarInitial: 'R',
+    avatarColor: '#1B4D3E',
+    revocationCheckedAt: '2 hours ago',
+    reputation: {
+      rating: 4.91,
+      outOf: 5,
+      totalTasks: 4660,
+      safetyIncidents: 0,
+      tier: 'Gold Partner'
+    },
+    credentials: [
+      {
+        id: 'swiggy',
+        initial: 'S',
+        title: 'Swiggy delivery partner',
+        subtitle: '4.92 rating · 3,240 deliveries',
+        status: 'valid'
+      },
+      {
+        id: 'uber',
+        initial: 'U',
+        title: 'Uber driver',
+        subtitle: '4.88 rating · 1,420 trips',
+        status: 'valid'
+      },
+      {
+        id: 'nsdc',
+        initial: 'N',
+        title: 'Two-Wheeler Operations, Level 2',
+        subtitle: 'Skill India (NSDC) · Distinction',
+        status: 'valid'
+      }
+    ]
+  },
+  priya: {
+    id: 'priya',
+    holderName: 'Priya Sharma',
+    did: 'did:key:z6MkpWorkerPriyaElectricFleet2026Address',
+    roleTag: 'Electric Fleet Quick-Commerce Lead',
+    avatarInitial: 'P',
+    avatarColor: '#7C3AED',
+    revocationCheckedAt: '15 mins ago',
+    reputation: {
+      rating: 4.97,
+      outOf: 5,
+      totalTasks: 5890,
+      safetyIncidents: 0,
+      tier: 'Platinum Elite'
+    },
+    credentials: [
+      {
+        id: 'zepto',
+        initial: 'Z',
+        title: 'Zepto Dark Store Fleet Lead',
+        subtitle: '4.98 rating · 3,920 fast deliveries',
+        status: 'valid'
+      },
+      {
+        id: 'blinkit',
+        initial: 'B',
+        title: 'Blinkit Express Specialist',
+        subtitle: '4.96 rating · 1,970 dropoffs',
+        status: 'valid'
+      },
+      {
+        id: 'evskill',
+        initial: 'E',
+        title: 'EV Safety & Battery Swapping Certified',
+        subtitle: 'Skill India (Green Mobility)',
+        status: 'valid'
+      }
+    ]
+  },
+  amit: {
+    id: 'amit',
+    holderName: 'Amit Patel',
+    did: 'did:key:z6MkaWorkerAmitProbationary2026Address',
+    roleTag: 'Entry-Level Delivery Partner',
+    avatarInitial: 'A',
+    avatarColor: '#D97706',
+    revocationCheckedAt: '1 day ago',
+    reputation: {
+      rating: 4.35,
+      outOf: 5,
+      totalTasks: 340,
+      safetyIncidents: 1,
+      tier: 'Standard Probationary'
+    },
+    credentials: [
+      {
+        id: 'porter',
+        initial: 'P',
+        title: 'Porter Logistics Courier',
+        subtitle: '4.35 rating · 340 completed trips',
+        status: 'valid'
+      },
+      {
+        id: 'safety_strike',
+        initial: '!',
+        title: 'Customer Speeding Dispute',
+        subtitle: 'Resolved with advisory strike',
+        status: 'warning'
+      }
+    ]
+  }
+};
+
 /**
  * Ultra-compact Verifiable Presentation format (< 120 chars)
  * Designed for instantaneous detection by any phone camera or webcam lens.
  */
-function createVerifiablePresentation(selectedKeys, isTampered = false) {
+function createVerifiablePresentation(profileId, selectedKeys, isTampered = false) {
+  const profile = WORKER_PROFILES[profileId] || WORKER_PROFILES.ramesh;
   const flags = selectedKeys.join(',');
   const tamperedFlag = isTampered ? '1' : '0';
   const nonce = Date.now().toString(36).slice(-6).toUpperCase();
-  // Format: GW-VP:v1:<holderDidShort>:<selectedCreds>:<tampered>:<nonce>:<sig>
+  // Format: GW-VP:v1:<profileId>:<flags>:<tampered>:<nonce>:<sig>
   const sig = isTampered ? 'ERR_SIG_FAIL' : 'OK_ED25519_VALID';
-  return `GW-VP:v1:Ramesh:${flags}:${tamperedFlag}:${nonce}:${sig}`;
+  return `GW-VP:v1:${profile.id}:${flags}:${tamperedFlag}:${nonce}:${sig}`;
 }
 
 /**
@@ -483,12 +598,18 @@ function createVerifiablePresentation(selectedKeys, isTampered = false) {
 function parsePresentationPayload(rawString) {
   if (rawString.startsWith('GW-VP:v1:')) {
     const parts = rawString.split(':');
-    const holder = parts[2] || 'Ramesh Kumar';
+    const profileId = parts[2] || 'ramesh';
+    const profile = WORKER_PROFILES[profileId] || WORKER_PROFILES.ramesh;
     const creds = (parts[3] || 'swiggy,uber,nsdc').split(',');
     const isTampered = parts[4] === '1';
     const nonce = parts[5] || 'VP-OK';
     return {
-      holderName: holder === 'Ramesh' ? 'Ramesh Kumar' : holder,
+      profileId: profile.id,
+      holderName: profile.holderName,
+      roleTag: profile.roleTag,
+      rating: profile.reputation.rating,
+      totalTasks: profile.reputation.totalTasks,
+      tier: profile.reputation.tier,
       nonce: nonce,
       hasTamper: isTampered,
       credentials: creds
@@ -500,57 +621,44 @@ function parsePresentationPayload(rawString) {
   const hasTamper = parsed.proof?.sig === 'CORRUPT_VP_SIG' ||
     parsed.vcs?.some(v => v.sig === 'INVALID_TAMPERED');
   return {
+    profileId: 'ramesh',
     holderName: parsed.holderName || 'Ramesh Kumar',
+    roleTag: 'Veteran Food & Mobility Partner',
+    rating: 4.91,
+    totalTasks: 4660,
+    tier: 'Gold Partner',
     nonce: parsed.nonce || 'VP-VALID',
     hasTamper,
     credentials: parsed.vcs?.map(v => v.type) || ['swiggy', 'uber', 'nsdc']
   };
 }
 
-const INITIAL_SNAPSHOT = {
-  holderName: 'Ramesh Kumar',
-  did: 'did:key:z6MkrWorkerRamesh2026Ed25519PublicAddress',
-  revocationCheckedAt: '2 hours ago',
-  reputation: {
-    rating: 4.91,
-    outOf: 5,
-    totalTasks: 4660,
-    safetyIncidents: 0,
-    tier: 'Gold'
-  },
-  credentials: [
-    {
-      id: 'swiggy',
-      initial: 'S',
-      title: 'Swiggy delivery partner',
-      subtitle: '4.92 rating · 3,240 deliveries',
-      status: 'valid'
-    },
-    {
-      id: 'uber',
-      initial: 'U',
-      title: 'Uber driver',
-      subtitle: '4.88 rating · 1,420 trips',
-      status: 'valid'
-    },
-    {
-      id: 'nsdc',
-      initial: 'N',
-      title: 'Two-Wheeler Operations, Level 2',
-      subtitle: 'Skill India (NSDC) · Distinction',
-      status: 'valid'
-    }
-  ]
-};
-
 export default function App() {
   const [tab, setTab] = useState('wallet'); // 'wallet' | 'inbox' | 'share' | 'me' | 'verify'
+  const [activeProfileId, setActiveProfileId] = useState('ramesh'); // 'ramesh' | 'priya' | 'amit'
+  const activeProfile = WORKER_PROFILES[activeProfileId] || WORKER_PROFILES.ramesh;
+
   const [verifyScenario, setVerifyScenario] = useState('verified'); // 'verified' | 'rejected'
   const [picked, setPicked] = useState(['swiggy', 'uber', 'nsdc']);
   const [countdown, setCountdown] = useState(58);
   const [copied, setCopied] = useState(false);
   const [decided, setDecided] = useState(false);
   const [revokedCreds, setRevokedCreds] = useState(new Set());
+
+  // Function to switch worker identity profile
+  const switchProfile = (profileId) => {
+    const prof = WORKER_PROFILES[profileId];
+    if (!prof) return;
+    setActiveProfileId(profileId);
+    setPicked(prof.credentials.map(c => c.id));
+    setDecided(false);
+    setCountdown(60);
+  };
+
+  // Sync picked credentials when activeProfileId changes initially
+  useEffect(() => {
+    setPicked(activeProfile.credentials.map(c => c.id));
+  }, [activeProfileId]);
 
   // Presentation QR Code Modal
   const [showQrModal, setShowQrModal] = useState(false);
@@ -874,7 +982,7 @@ export default function App() {
                 }}
               >
                 <QRCodeSVG
-                  value={createVerifiablePresentation(picked, verifyScenario === 'rejected')}
+                  value={createVerifiablePresentation(activeProfileId, picked, verifyScenario === 'rejected')}
                   size={240}
                   level="L"
                   fgColor="#000000"
@@ -1302,21 +1410,36 @@ export default function App() {
 
         {/* Holder Identity */}
         <div style={{ marginTop: '20px' }}>
-          <h1 style={{ fontSize: '24px', fontWeight: 600, color: colors.ink, margin: 0 }}>
-            {INITIAL_SNAPSHOT.holderName}
-          </h1>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <h1 style={{ fontSize: '24px', fontWeight: 600, color: colors.ink, margin: 0 }}>
+              {activeProfile.holderName}
+            </h1>
+            <span style={{
+              fontSize: '11px',
+              fontWeight: 600,
+              padding: '4px 8px',
+              borderRadius: '6px',
+              backgroundColor: colors.okTint,
+              color: colors.ok
+            }}>
+              {activeProfile.reputation.tier}
+            </span>
+          </div>
           <div style={{
             fontFamily: 'JetBrains Mono, monospace',
             fontSize: '12px',
             color: colors.muted,
             marginTop: '2px'
           }}>
-            {shortDid(INITIAL_SNAPSHOT.did)}
+            {shortDid(activeProfile.did)}
+          </div>
+          <div style={{ fontSize: '13px', color: colors.brand, fontWeight: 500, marginTop: '2px' }}>
+            {activeProfile.roleTag}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px' }}>
             <Dot on={true} />
             <span style={{ fontSize: '13px', color: colors.muted }}>
-              Online. Wallet is up to date.
+              Online. Credentials cryptographically verified.
             </span>
           </div>
         </div>
@@ -1326,24 +1449,31 @@ export default function App() {
           <span style={{ fontSize: '13px', color: colors.muted }}>Combined rating</span>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '2px' }}>
             <span style={{ fontSize: '48px', fontWeight: 600, lineHeight: 1.1, color: colors.ink }}>
-              {INITIAL_SNAPSHOT.reputation.rating.toFixed(2)}
+              {activeProfile.reputation.rating.toFixed(2)}
             </span>
             <span style={{ fontSize: '13px', color: colors.muted }}>
-              out of {INITIAL_SNAPSHOT.reputation.outOf}
+              out of {activeProfile.reputation.outOf}
             </span>
           </div>
           <div style={{ fontSize: '13px', color: colors.muted, marginTop: '2px' }}>
-            {INITIAL_SNAPSHOT.reputation.totalTasks.toLocaleString('en-IN')} completed tasks · no safety incidents
+            {activeProfile.reputation.totalTasks.toLocaleString('en-IN')} completed tasks · {activeProfile.reputation.safetyIncidents === 0 ? 'no safety incidents' : `${activeProfile.reputation.safetyIncidents} incident reported`}
           </div>
 
           <div style={{
             marginTop: '14px',
             padding: '12px 14px',
             borderRadius: '10px',
-            backgroundColor: colors.okTint
+            backgroundColor: activeProfile.reputation.tier.includes('Standard') ? colors.badTint : colors.okTint
           }}>
-            <span style={{ fontSize: '14px', lineHeight: '20px', color: colors.ok, fontWeight: 500 }}>
-              You qualify for {INITIAL_SNAPSHOT.reputation.tier} tier at platforms that accept this wallet.
+            <span style={{
+              fontSize: '14px',
+              lineHeight: '20px',
+              color: activeProfile.reputation.tier.includes('Standard') ? colors.bad : colors.ok,
+              fontWeight: 500
+            }}>
+              {activeProfile.reputation.tier.includes('Standard')
+                ? 'Probationary status. Higher platform commission applies.'
+                : `You qualify for ${activeProfile.reputation.tier} fast-track at participating platforms.`}
             </span>
           </div>
         </div>
@@ -1354,25 +1484,26 @@ export default function App() {
             Work history
           </div>
           <Panel>
-            {INITIAL_SNAPSHOT.credentials.map((c, i) => {
+            {activeProfile.credentials.map((c, i) => {
               const isRevoked = c.id === 'uber' && isUberRevoked;
+              const isWarning = c.status === 'warning';
               return (
                 <PanelRow
                   key={c.id}
-                  borderBottom={i < INITIAL_SNAPSHOT.credentials.length - 1}
+                  borderBottom={i < activeProfile.credentials.length - 1}
                   style={{ gap: '12px', minHeight: '64px' }}
                 >
                   <div style={{
                     width: '36px',
                     height: '36px',
                     borderRadius: '18px',
-                    backgroundColor: colors.avatar,
+                    backgroundColor: activeProfile.avatarColor,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontWeight: 600,
                     fontSize: '14px',
-                    color: colors.ink,
+                    color: '#FFFFFF',
                     flexShrink: 0
                   }}>
                     {c.initial}
@@ -1385,13 +1516,16 @@ export default function App() {
                       {c.subtitle}
                     </div>
                   </div>
-                  <Status kind={isRevoked ? 'bad' : 'ok'} label={isRevoked ? 'Revoked' : 'Verified'} />
+                  <Status
+                    kind={isRevoked || isWarning ? 'bad' : 'ok'}
+                    label={isRevoked ? 'Revoked' : isWarning ? 'Disputed' : 'Verified'}
+                  />
                 </PanelRow>
               );
             })}
           </Panel>
           <div style={{ fontSize: '13px', color: colors.muted, marginTop: '10px' }}>
-            Revocation last checked {INITIAL_SNAPSHOT.revocationCheckedAt}
+            Revocation last checked {activeProfile.revocationCheckedAt}
           </div>
         </div>
 
@@ -1413,8 +1547,8 @@ export default function App() {
 
   /* TAB 2: SHARE REPUTATION WITH DYNAMIC QR */
   function renderShareScreen() {
-    const valid = INITIAL_SNAPSHOT.credentials;
-    const vpPayload = createVerifiablePresentation(picked, verifyScenario === 'rejected');
+    const valid = activeProfile.credentials;
+    const vpPayload = createVerifiablePresentation(activeProfileId, picked, verifyScenario === 'rejected');
 
     return (
       <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -1625,40 +1759,130 @@ export default function App() {
     );
   }
 
-  /* TAB 4: ME */
+  /* TAB 4: ME (PROFILE & MULTI-IDENTITY SWITCHER) */
   function renderMeScreen() {
     return (
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         <h1 style={{ fontSize: '24px', fontWeight: 600, color: colors.ink, margin: 0 }}>
-          Me
+          Me & Switch Identity
         </h1>
+        <p style={{ fontSize: '13px', color: colors.muted, margin: '4px 0 16px', lineHeight: 1.4 }}>
+          Switch between verified worker personas to test different credentials, trust tiers, and platforms.
+        </p>
 
-        <div style={{ marginTop: '24px' }}>
+        {/* WORKER PERSONA SWITCHER SELECTOR */}
+        <div style={{ marginBottom: '24px' }}>
+          <div style={{ fontSize: '15px', fontWeight: 600, color: colors.ink, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Icon name="userSwitch" size={18} color={colors.brand} />
+            <span>Switch Active Account</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {Object.values(WORKER_PROFILES).map((prof) => {
+              const isSelected = prof.id === activeProfileId;
+              return (
+                <div
+                  key={prof.id}
+                  onClick={() => switchProfile(prof.id)}
+                  style={{
+                    padding: '14px 16px',
+                    borderRadius: '12px',
+                    backgroundColor: isSelected ? colors.surface : '#EDECE8',
+                    border: isSelected ? `2px solid ${colors.brand}` : `1px solid ${colors.line}`,
+                    boxShadow: isSelected ? '0 4px 12px rgba(27, 77, 62, 0.12)' : 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '20px',
+                      backgroundColor: prof.avatarColor,
+                      color: '#FFFFFF',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 700,
+                      fontSize: '16px',
+                      flexShrink: 0
+                    }}>
+                      {prof.avatarInitial}
+                    </div>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '15px', fontWeight: 700, color: colors.ink }}>
+                          {prof.holderName}
+                        </span>
+                        {isSelected && (
+                          <span style={{
+                            backgroundColor: colors.brand,
+                            color: '#FFFFFF',
+                            fontSize: '10px',
+                            fontWeight: 700,
+                            padding: '2px 6px',
+                            borderRadius: '4px'
+                          }}>
+                            ACTIVE
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: '12px', color: colors.muted, marginTop: '2px' }}>
+                        {prof.roleTag}
+                      </div>
+                      <div style={{ fontSize: '12px', color: colors.ok, fontWeight: 600, marginTop: '2px' }}>
+                        ★ {prof.reputation.rating.toFixed(2)} · {prof.reputation.totalTasks.toLocaleString('en-IN')} tasks · {prof.reputation.tier}
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '10px',
+                    border: isSelected ? `6px solid ${colors.brand}` : `2px solid ${colors.lineStrong}`,
+                    backgroundColor: colors.surface,
+                    flexShrink: 0
+                  }} />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* CURRENT ACTIVE IDENTITY CARD */}
+        <div style={{ marginTop: '8px' }}>
           <div style={{ fontSize: '15px', fontWeight: 600, color: colors.ink, marginBottom: '8px' }}>
-            Your ID
+            Current Identity Details
           </div>
           <Panel>
             <PanelRow style={{ gap: '12px', minHeight: '56px' }}>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: '15px', fontWeight: 600, color: colors.ink }}>
-                  {INITIAL_SNAPSHOT.holderName}
+                  {activeProfile.holderName}
                 </div>
-                <div style={{ fontSize: '13px', color: colors.muted, fontFamily: 'monospace' }}>
-                  {shortDid(INITIAL_SNAPSHOT.did)}
+                <div style={{ fontSize: '12px', color: colors.muted, fontFamily: 'monospace' }}>
+                  {activeProfile.did}
                 </div>
               </div>
             </PanelRow>
             <PanelRow
-              onClick={copyDid}
+              onClick={() => {
+                if (navigator.clipboard) navigator.clipboard.writeText(activeProfile.did);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+              }}
               borderBottom={false}
               style={{ gap: '12px', minHeight: '56px', cursor: 'pointer' }}
             >
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '15px', fontWeight: 600, color: colors.ink }}>
-                  {copied ? 'Copied to clipboard' : 'Copy my ID'}
+                <div style={{ fontSize: '14px', fontWeight: 600, color: colors.ink }}>
+                  {copied ? 'Copied to clipboard' : 'Copy Decentralized Identifier (DID)'}
                 </div>
-                <div style={{ fontSize: '13px', color: colors.muted }}>
-                  Share this only with people you trust
+                <div style={{ fontSize: '12px', color: colors.muted }}>
+                  W3C did:key cryptographic key reference
                 </div>
               </div>
               <Icon name="copy" size={18} color={colors.muted} />
@@ -1745,6 +1969,11 @@ export default function App() {
 
   /* SCREEN 5: VERIFIER RESULT (RESPONSIVE INSPECTION) */
   function renderVerifyScreen() {
+    // Current profile evaluated
+    const verifiedProfile = lastScannedPayload
+      ? (WORKER_PROFILES[lastScannedPayload.profileId] || activeProfile)
+      : activeProfile;
+
     const isOk = verifyScenario === 'verified' && !isUberRevoked;
 
     return (
@@ -1782,7 +2011,7 @@ export default function App() {
           </div>
           <div style={{ fontSize: '13px', fontWeight: 600, color: colors.zomato, display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: colors.zomato }} />
-            Zomato Onboarding
+            Zomato Onboarding Desk
           </div>
         </div>
 
@@ -1821,9 +2050,8 @@ export default function App() {
             </button>
             <button
               onClick={() => {
-                // Instantly re-verify current wallet selection
-                const payload = createVerifiablePresentation(picked, false);
-                setLastScannedPayload(JSON.parse(payload));
+                const payload = createVerifiablePresentation(activeProfileId, picked, false);
+                setLastScannedPayload(parsePresentationPayload(payload));
                 setVerifyScenario('verified');
               }}
               title="Quick scan from current device wallet"
@@ -1842,7 +2070,7 @@ export default function App() {
                 cursor: 'pointer'
               }}
             >
-              Scan Active Wallet
+              Scan Active Profile
             </button>
           </div>
 
@@ -1851,15 +2079,17 @@ export default function App() {
               backgroundColor: colors.surface,
               border: `1px solid ${colors.line}`,
               borderRadius: '8px',
-              padding: '8px 12px',
+              padding: '10px 14px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
               fontSize: '12px'
             }}>
-              <span style={{ color: colors.muted }}>
-                Scanned Holder: <strong style={{ color: colors.ink }}>{lastScannedPayload.holderName || 'Ramesh Kumar'}</strong>
-              </span>
+              <div>
+                <span style={{ color: colors.muted }}>Scanned Account: </span>
+                <strong style={{ color: colors.ink }}>{verifiedProfile.holderName}</strong>
+                <span style={{ color: colors.muted, marginLeft: '6px' }}>({verifiedProfile.roleTag})</span>
+              </div>
               <span style={{
                 fontFamily: 'JetBrains Mono, monospace',
                 fontSize: '11px',
@@ -1934,23 +2164,25 @@ export default function App() {
             />
             <div style={{ fontSize: '13px', color: colors.muted, marginTop: '4px' }}>
               {isOk
-                ? 'All four cryptographic checks passed in 1.4 seconds.'
+                ? `Cryptographic signature valid for ${verifiedProfile.holderName}.`
                 : isUberRevoked
-                ? 'One credential was revoked by the issuing authority.'
-                : 'One credential was changed after the issuer signed it.'}
+                ? 'One credential was revoked by issuing authority.'
+                : 'Credential alteration detected: cryptographic signature mismatch.'}
             </div>
 
             <div style={{ fontSize: '13px', color: colors.muted, marginTop: '24px' }}>Combined rating</div>
             <div style={{ fontSize: '44px', fontWeight: 600, color: colors.ink, lineHeight: 1.1 }}>
-              {isOk ? '4.91' : '-'}
+              {isOk ? verifiedProfile.reputation.rating.toFixed(2) : '-'}
             </div>
             <div style={{ fontSize: '13px', color: colors.muted }}>
-              {isOk ? 'out of 5 · 4,660 completed tasks · no safety incidents' : 'Cannot be calculated from an invalid record'}
+              {isOk
+                ? `out of 5 · ${verifiedProfile.reputation.totalTasks.toLocaleString('en-IN')} completed tasks · ${verifiedProfile.reputation.safetyIncidents === 0 ? 'no safety incidents' : `${verifiedProfile.reputation.safetyIncidents} incident reported`}`
+                : 'Cannot be calculated from an invalid presentation record'}
             </div>
 
             <div style={{ fontSize: '13px', color: colors.muted, marginTop: '20px' }}>Recommended tier</div>
             <div style={{ fontSize: '18px', fontWeight: 600, color: colors.ink }}>
-              {isOk ? 'Gold Partner' : 'Standard (no verified history)'}
+              {isOk ? verifiedProfile.reputation.tier : 'Standard Probationary (no verified history)'}
             </div>
 
             <div style={{ marginTop: '20px' }}>
@@ -1963,11 +2195,11 @@ export default function App() {
                   alignItems: 'center',
                   gap: '8px'
                 }}>
-                  <Status kind="ok" label="Fast-track onboarding approved!" />
+                  <Status kind="ok" label={`Fast-track approved as ${verifiedProfile.reputation.tier}!`} />
                 </div>
               ) : (
                 <Button
-                  label={isOk ? 'Fast-track as Zomato Gold Partner' : 'Reject and scan again'}
+                  label={isOk ? `Fast-track as Zomato ${verifiedProfile.reputation.tier}` : 'Reject presentation and scan again'}
                   variant={isOk ? 'primary' : 'danger'}
                   onClick={() => (isOk ? setDecided(true) : setTab('wallet'))}
                 />
@@ -1975,7 +2207,7 @@ export default function App() {
             </div>
 
             <div style={{ fontSize: '12px', color: colors.muted, marginTop: '12px', lineHeight: 1.4 }}>
-              Without this wallet, the worker would start at Standard probationary tier with 0 reputation.
+              Zero fraud onboarding verified via Ed25519 signature proof.
             </div>
           </div>
 
@@ -1990,25 +2222,25 @@ export default function App() {
                   {
                     id: 'pres',
                     title: 'Presentation signature',
-                    detail: 'The worker holds the Ed25519 private key for this identity.',
+                    detail: `Ed25519 key verified for ${verifiedProfile.holderName}.`,
                     passed: true
                   },
                   {
                     id: 'iss',
                     title: 'Issuer signatures',
-                    detail: isOk ? 'All 3 credentials signed by known platform DIDs.' : '1 credential signature failed verification.',
+                    detail: isOk ? `All credentials verified by registered platform DIDs.` : 'Credential signature failed verification.',
                     passed: isOk
                   },
                   {
                     id: 'val',
                     title: 'Dates and expiry',
-                    detail: 'All within valid issuance timestamps.',
+                    detail: 'All within valid issuance timestamps and active session window.',
                     passed: true
                   },
                   {
                     id: 'rev',
                     title: 'Revocation status',
-                    detail: !isUberRevoked ? 'None revoked. Central registry checked.' : 'Uber credential marked as REVOKED.',
+                    detail: !isUberRevoked ? 'None revoked. Central issuer registry checked.' : 'Uber mobility credential marked as REVOKED.',
                     passed: !isUberRevoked
                   }
                 ].map((c, i) => (
@@ -2042,52 +2274,33 @@ export default function App() {
                 Credentials Presented
               </div>
               <Panel>
-                {[
-                  {
-                    id: 'swiggy',
-                    title: 'Swiggy · 3,240 deliveries',
-                    detail: 'Rating 4.92 · Top Tier Partner',
-                    valid: true
-                  },
-                  {
-                    id: 'uber',
-                    title: 'Uber · 1,420 trips',
-                    detail: !isOk
-                      ? 'Rating shown 5.00. Uber signed 4.88.'
-                      : isUberRevoked
-                      ? 'Status: Revoked by platform policy'
-                      : 'Rating 4.88 · 0 safety incidents',
-                    valid: isOk && !isUberRevoked
-                  },
-                  {
-                    id: 'nsdc',
-                    title: 'Skill India (NSDC)',
-                    detail: 'Two-Wheeler Operations, Level 2',
-                    valid: true
-                  }
-                ].map((c, i) => (
-                  <PanelRow
-                    key={c.id}
-                    borderBottom={i < 2}
-                    style={{
-                      justifyContent: 'space-between',
-                      backgroundColor: !c.valid ? colors.badTint : 'transparent',
-                      minHeight: '54px'
-                    }}
-                  >
-                    <div>
-                      <div style={{ fontSize: '14px', fontWeight: 600, color: colors.ink }}>{c.title}</div>
-                      <div style={{ fontSize: '12px', color: colors.muted }}>{c.detail}</div>
-                    </div>
-                    <span style={{
-                      fontWeight: 600,
-                      fontSize: '13px',
-                      color: c.valid ? colors.ok : colors.bad
-                    }}>
-                      {c.valid ? 'Valid' : 'Altered'}
-                    </span>
-                  </PanelRow>
-                ))}
+                {verifiedProfile.credentials.map((c, i) => {
+                  const isRevoked = c.id === 'uber' && isUberRevoked;
+                  const isValid = isOk && !isRevoked && c.status !== 'warning';
+                  return (
+                    <PanelRow
+                      key={c.id}
+                      borderBottom={i < verifiedProfile.credentials.length - 1}
+                      style={{
+                        justifyContent: 'space-between',
+                        backgroundColor: !isValid ? colors.badTint : 'transparent',
+                        minHeight: '54px'
+                      }}
+                    >
+                      <div>
+                        <div style={{ fontSize: '14px', fontWeight: 600, color: colors.ink }}>{c.title}</div>
+                        <div style={{ fontSize: '12px', color: colors.muted }}>{c.subtitle}</div>
+                      </div>
+                      <span style={{
+                        fontWeight: 600,
+                        fontSize: '13px',
+                        color: isValid ? colors.ok : colors.bad
+                      }}>
+                        {isValid ? 'Valid' : isRevoked ? 'Revoked' : c.status === 'warning' ? 'Disputed' : 'Altered'}
+                      </span>
+                    </PanelRow>
+                  );
+                })}
               </Panel>
             </div>
           </div>
