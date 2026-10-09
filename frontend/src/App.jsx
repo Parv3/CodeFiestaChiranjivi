@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { Html5Qrcode } from 'html5-qrcode';
 
 // Brand colors and tokens from gigwallet
 const colors = {
@@ -208,73 +208,171 @@ function shortDid(did) {
 }
 
 /**
- * Live Camera QR Scanner component using html5-qrcode
+ * Direct Live Camera & Image File QR Scanner using Html5Qrcode
  */
 function CameraScanner({ onScanSuccess, onScanError }) {
-  const scannerRef = useRef(null);
-  const [initError, setInitError] = useState(null);
+  const [cameraActive, setCameraActive] = useState(false);
+  const [scanStatus, setScanStatus] = useState('Initializing camera viewfinder...');
+  const html5QrCodeRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
-    let isMounted = true;
+    let mounted = true;
+    const scannerId = 'camera-video-scanner';
 
-    // Small delay to ensure the container element is painted in the DOM
-    const timeout = setTimeout(() => {
+    const startScanner = async () => {
       try {
-        const element = document.getElementById('qr-reader-container');
-        if (!element || !isMounted) return;
+        const html5QrCode = new Html5Qrcode(scannerId);
+        html5QrCodeRef.current = html5QrCode;
 
-        const scanner = new Html5QrcodeScanner(
-          'qr-reader-container',
-          {
-            fps: 10,
-            qrbox: { width: 220, height: 220 },
-            rememberLastUsedCamera: true
-          },
-          false
-        );
+        const config = {
+          fps: 15,
+          qrbox: { width: 240, height: 240 },
+          aspectRatio: 1.0
+        };
 
-        scanner.render(
+        await html5QrCode.start(
+          { facingMode: 'environment' },
+          config,
           (decodedText) => {
-            if (isMounted && onScanSuccess) {
+            if (mounted && onScanSuccess) {
               onScanSuccess(decodedText);
             }
           },
-          (error) => {
-            if (isMounted && onScanError) {
-              onScanError(error);
-            }
+          (err) => {
+            if (mounted && onScanError) onScanError(err);
           }
         );
 
-        scannerRef.current = scanner;
+        if (mounted) {
+          setCameraActive(true);
+          setScanStatus('Camera active. Point at worker QR code.');
+        }
       } catch (err) {
-        console.error("Camera init error:", err);
-        if (isMounted) setInitError(err.message || 'Unable to access camera');
+        console.warn('Camera stream failed or permission denied:', err);
+        if (mounted) {
+          setCameraActive(false);
+          setScanStatus(
+            err.name === 'NotAllowedError'
+              ? 'Camera permission denied. Allow camera or upload a QR image below.'
+              : 'Camera unavailable on this device. You can upload a photo or use the simulator.'
+          );
+        }
       }
-    }, 100);
+    };
+
+    const timer = setTimeout(startScanner, 150);
 
     return () => {
-      isMounted = false;
-      clearTimeout(timeout);
-      if (scannerRef.current) {
+      mounted = false;
+      clearTimeout(timer);
+      if (html5QrCodeRef.current) {
         try {
-          scannerRef.current.clear().catch(() => {});
+          if (html5QrCodeRef.current.isScanning) {
+            html5QrCodeRef.current.stop().then(() => {
+              html5QrCodeRef.current.clear();
+            }).catch(() => {});
+          } else {
+            html5QrCodeRef.current.clear();
+          }
         } catch (_) {}
       }
     };
   }, []);
 
-  if (initError) {
-    return (
-      <div style={{ padding: '16px', color: colors.bad, textAlign: 'center', fontSize: '13px' }}>
-        Camera permission required or unavailable ({initError}). Please use the simulator below.
-      </div>
-    );
-  }
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const html5QrCode = new Html5Qrcode('camera-file-scanner');
+      const result = await html5QrCode.scanFile(file, true);
+      if (onScanSuccess) {
+        onScanSuccess(result);
+      }
+      html5QrCode.clear();
+    } catch (err) {
+      alert('Could not detect a QR code in the uploaded image. Please try another photo.');
+    }
+  };
 
   return (
-    <div style={{ width: '100%', overflow: 'hidden', borderRadius: '12px' }}>
-      <div id="qr-reader-container" style={{ width: '100%' }} />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
+      {/* Viewfinder Frame */}
+      <div style={{
+        position: 'relative',
+        width: '100%',
+        minHeight: '260px',
+        backgroundColor: '#0A0A0A',
+        borderRadius: '14px',
+        overflow: 'hidden',
+        border: `2px solid ${colors.brand}`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div id="camera-video-scanner" style={{ width: '100%', height: '100%' }} />
+        <div id="camera-file-scanner" style={{ display: 'none' }} />
+
+        {/* Framing Guides Overlay */}
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          pointerEvents: 'none',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <div style={{
+            width: '200px',
+            height: '200px',
+            border: `2.5px solid ${colors.ok}`,
+            borderRadius: '16px',
+            boxShadow: '0 0 0 9999px rgba(0,0,0,0.4)'
+          }} />
+        </div>
+      </div>
+
+      <div style={{
+        fontSize: '12px',
+        color: cameraActive ? colors.ok : colors.muted,
+        textAlign: 'center',
+        lineHeight: 1.4
+      }}>
+        {scanStatus}
+      </div>
+
+      {/* Upload QR Image Fallback Button */}
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          style={{ display: 'none' }}
+          onChange={handleFileUpload}
+        />
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          style={{
+            padding: '8px 16px',
+            borderRadius: '8px',
+            backgroundColor: colors.surface,
+            border: `1px solid ${colors.lineStrong}`,
+            color: colors.ink,
+            fontSize: '12px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}
+        >
+          <Icon name="camera" size={16} color={colors.ink} />
+          <span>Upload QR Image / Photo</span>
+        </button>
+      </div>
     </div>
   );
 }
