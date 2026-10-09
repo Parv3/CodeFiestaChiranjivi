@@ -686,6 +686,158 @@ const WORKER_PROFILES = {
         requestedCreds: ['Authentic Govt Skill Certificate', 'Verified Biometric Proof']
       }
     ]
+  },
+  ananya: {
+    id: 'ananya',
+    holderName: 'Ananya Sen',
+    did: 'did:key:z6MksAnanyaUrbanBeautyWellness2026EdKey',
+    roleTag: 'Verified Salon & Wellness Partner',
+    avatarInitial: 'S',
+    avatarColor: '#00897B',
+    revocationCheckedAt: '2 mins ago',
+    isUnverifiable: false,
+    reputation: {
+      rating: 4.95,
+      outOf: 5,
+      totalTasks: 2410,
+      safetyIncidents: 0,
+      tier: 'Diamond Wellness Pro'
+    },
+    credentials: [
+      {
+        id: 'urban_beauty',
+        initial: 'U',
+        title: 'Urban Company Salon Specialist',
+        subtitle: '4.96 rating · 1,850 completed services',
+        status: 'valid'
+      },
+      {
+        id: 'yes_madam',
+        initial: 'Y',
+        title: 'Yes Madam At-Home Wellness Lead',
+        subtitle: '4.93 rating · 560 sessions',
+        status: 'valid'
+      },
+      {
+        id: 'cidsco_cert',
+        initial: 'C',
+        title: 'CIDESCO Hygiene & Sanitation Master',
+        subtitle: 'Govt & International Beauty Standards Accredited',
+        status: 'valid'
+      }
+    ],
+    inboxRequests: [
+      {
+        id: 'enrich-req',
+        company: 'Enrich Salons On-Demand',
+        initial: 'E',
+        color: '#D81B60',
+        role: 'Senior At-Home Beauty Stylist',
+        timeAgo: '14 mins ago',
+        description: 'Enrich Salons is seeking your verified Urban Company hygiene rating and CIDESCO certification to approve zero-probation bookings.',
+        requestedCreds: ['Urban Company Salon Specialist (1,850 jobs)', 'CIDESCO Hygiene Master Certification']
+      },
+      {
+        id: 'vlcc-req',
+        company: 'VLCC Vanity Express',
+        initial: 'V',
+        color: '#E65100',
+        role: 'Bridal & Wellness Consultant',
+        timeAgo: '2 hours ago',
+        description: 'VLCC requests your Yes Madam at-home record to grant top-tier commission privileges.',
+        requestedCreds: ['Yes Madam Wellness Record (560 sessions)', 'Safety & Sanitation Clean Check']
+      }
+    ]
+  },
+  vikram: {
+    id: 'vikram',
+    holderName: 'Vikram "Vicky" Malhotra',
+    did: 'did:key:z6MktINVALIDTamperedPayloadSigVikramMalhotra99',
+    roleTag: 'Unverified / Altered Commercial License',
+    avatarInitial: '!',
+    avatarColor: '#C2185B',
+    revocationCheckedAt: '1 min ago (FAIL)',
+    isUnverifiable: true,
+    reputation: {
+      rating: 2.95,
+      outOf: 5,
+      totalTasks: 42,
+      safetyIncidents: 4,
+      tier: 'Unverified (Altered Payload Detected)'
+    },
+    credentials: [
+      {
+        id: 'altered_license',
+        initial: 'X',
+        title: 'Heavy Commercial Driving Permit (Altered)',
+        subtitle: 'Ed25519 signature mismatch · Tampered vehicle class',
+        status: 'invalid'
+      },
+      {
+        id: 'fraud_rating',
+        initial: '!',
+        title: 'Falsified Delhivery Tenure Proof',
+        subtitle: 'Issuer cryptographic verification failed at root authority',
+        status: 'invalid'
+      }
+    ],
+    inboxRequests: [
+      {
+        id: 'delhivery-audit-req',
+        company: 'Delhivery Heavy Freight',
+        initial: 'D',
+        color: '#C2185B',
+        role: 'Regional Logistics Fleet Audit',
+        timeAgo: 'Just now',
+        description: 'Delhivery Freight flagged altered vehicle class metadata in your commercial license. Account suspended pending cryptographic re-verification.',
+        requestedCreds: ['Genuine Commercial Heavy Permit', 'State RTO Cryptographic Signature']
+      }
+    ]
+  },
+  suresh: {
+    id: 'suresh',
+    holderName: 'Suresh Raina',
+    did: 'did:key:z6MkwINVALIDRevokedCourierProofKey8871X',
+    roleTag: 'Unverified / Revoked Transport Authority Permit',
+    avatarInitial: '!',
+    avatarColor: '#E64A19',
+    revocationCheckedAt: '5 mins ago (FAIL)',
+    isUnverifiable: true,
+    reputation: {
+      rating: 3.40,
+      outOf: 5,
+      totalTasks: 190,
+      safetyIncidents: 2,
+      tier: 'Unverified (Revocation Registry Flagged)'
+    },
+    credentials: [
+      {
+        id: 'revoked_transport',
+        initial: 'X',
+        title: 'Express Logistics Courier Permit (Revoked)',
+        subtitle: 'Issuer revocation list match: License revoked for safety violations',
+        status: 'invalid'
+      },
+      {
+        id: 'tampered_rating',
+        initial: '!',
+        title: 'Artificially Inflated Rating Certificate',
+        subtitle: 'Payload hash does not match issuer signed hash digest',
+        status: 'invalid'
+      }
+    ],
+    inboxRequests: [
+      {
+        id: 'bluedart-req',
+        company: 'Blue Dart Aviation Couriers',
+        initial: 'B',
+        color: '#1A237E',
+        role: 'Express Air Document Courier',
+        timeAgo: '10 mins ago',
+        description: 'Blue Dart flagged your transport credentials on central revocation registries. Verification blocked until dispute resolution.',
+        requestedCreds: ['Unrevoked Transport License', 'Clear Police Background Token']
+      }
+    ]
   }
 };
 
@@ -764,6 +916,8 @@ export default function App() {
     if (!prof) return;
     setActiveProfileId(profileId);
     setPicked(prof.credentials.map(c => c.id));
+    setVerifyScenario(prof.isUnverifiable ? 'rejected' : 'verified');
+    setLastScannedPayload(null);
     setDecided(false);
     setCountdown(60);
   };
@@ -1299,51 +1453,64 @@ export default function App() {
                     gap: '8px'
                   }}>
                     <span style={{ fontSize: '12px', fontWeight: 600, color: colors.muted }}>Instant Scanner Simulator:</span>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <button
-                        onClick={() => {
-                          const payload = createVerifiablePresentation(['swiggy', 'uber', 'nsdc'], false);
-                          setScannerRawInput(payload);
-                          setLastScannedPayload(parsePresentationPayload(payload));
-                          setVerifyScenario('verified');
-                          setShowScannerModal(false);
-                        }}
-                        style={{
-                          flex: 1,
-                          padding: '8px 12px',
-                          borderRadius: '8px',
-                          backgroundColor: colors.okTint,
-                          border: `1px solid ${colors.ok}`,
-                          color: colors.ok,
-                          fontWeight: 600,
-                          fontSize: '12px',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        Simulate Valid Scan
-                      </button>
-                      <button
-                        onClick={() => {
-                          const payload = createVerifiablePresentation(['swiggy', 'uber', 'nsdc'], true);
-                          setScannerRawInput(payload);
-                          setLastScannedPayload(parsePresentationPayload(payload));
-                          setVerifyScenario('rejected');
-                          setShowScannerModal(false);
-                        }}
-                        style={{
-                          flex: 1,
-                          padding: '8px 12px',
-                          borderRadius: '8px',
-                          backgroundColor: colors.badTint,
-                          border: `1px solid ${colors.bad}`,
-                          color: colors.bad,
-                          fontWeight: 600,
-                          fontSize: '12px',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        Simulate Tampered Scan
-                      </button>
+                    <div>
+                      {!activeProfile.isUnverifiable ? (
+                        <button
+                          onClick={() => {
+                            const payload = createVerifiablePresentation(activeProfileId, picked, false);
+                            setScannerRawInput(payload);
+                            setLastScannedPayload(parsePresentationPayload(payload));
+                            setVerifyScenario('verified');
+                            setShowScannerModal(false);
+                          }}
+                          style={{
+                            width: '100%',
+                            padding: '10px 14px',
+                            borderRadius: '8px',
+                            backgroundColor: colors.okTint,
+                            border: `1px solid ${colors.ok}`,
+                            color: colors.ok,
+                            fontWeight: 600,
+                            fontSize: '13px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px'
+                          }}
+                        >
+                          <Icon name="check" size={16} color={colors.ok} />
+                          <span>Simulate Authentic Scan ({activeProfile.holderName})</span>
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            const payload = createVerifiablePresentation(activeProfileId, picked, true);
+                            setScannerRawInput(payload);
+                            setLastScannedPayload(parsePresentationPayload(payload));
+                            setVerifyScenario('rejected');
+                            setShowScannerModal(false);
+                          }}
+                          style={{
+                            width: '100%',
+                            padding: '10px 14px',
+                            borderRadius: '8px',
+                            backgroundColor: colors.badTint,
+                            border: `1px solid ${colors.bad}`,
+                            color: colors.bad,
+                            fontWeight: 600,
+                            fontSize: '13px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px'
+                          }}
+                        >
+                          <Icon name="x" size={16} color={colors.bad} />
+                          <span>Simulate Tampered / Altered Scan ({activeProfile.holderName})</span>
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -2073,46 +2240,53 @@ export default function App() {
         </div>
 
         {/* Verifier Preview Simulation */}
+        {/* Verifier Preview for Current Profile */}
         <div style={{ marginTop: '24px' }}>
           <div style={{ fontSize: '15px', fontWeight: 600, color: colors.ink, marginBottom: '8px' }}>
             Verifier preview
           </div>
           <Panel>
-            <PanelRow
-              onClick={() => {
-                setVerifyScenario('verified');
-                setTab('verify');
-              }}
-              style={{ gap: '12px', minHeight: '56px', cursor: 'pointer' }}
-            >
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '15px', fontWeight: 600, color: colors.ink }}>
-                  Verified result
+            {!activeProfile.isUnverifiable ? (
+              <PanelRow
+                onClick={() => {
+                  setVerifyScenario('verified');
+                  setLastScannedPayload(null);
+                  setTab('verify');
+                }}
+                borderBottom={false}
+                style={{ gap: '12px', minHeight: '56px', cursor: 'pointer' }}
+              >
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '15px', fontWeight: 600, color: colors.ink }}>
+                    Verified result preview
+                  </div>
+                  <div style={{ fontSize: '13px', color: colors.muted }}>
+                    What receiving platforms see for {activeProfile.holderName} (Authentic Ed25519)
+                  </div>
                 </div>
-                <div style={{ fontSize: '13px', color: colors.muted }}>
-                  What a new platform sees
+                <Icon name="chevron" size={18} color={colors.muted} />
+              </PanelRow>
+            ) : (
+              <PanelRow
+                onClick={() => {
+                  setVerifyScenario('rejected');
+                  setLastScannedPayload(null);
+                  setTab('verify');
+                }}
+                borderBottom={false}
+                style={{ gap: '12px', minHeight: '56px', cursor: 'pointer', backgroundColor: colors.badTint }}
+              >
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '15px', fontWeight: 600, color: colors.bad }}>
+                    Rejected result preview (Tampered / Altered)
+                  </div>
+                  <div style={{ fontSize: '13px', color: colors.muted }}>
+                    What receiving platforms see for {activeProfile.holderName} (Signature Failure)
+                  </div>
                 </div>
-              </div>
-              <Icon name="chevron" size={18} color={colors.muted} />
-            </PanelRow>
-            <PanelRow
-              onClick={() => {
-                setVerifyScenario('rejected');
-                setTab('verify');
-              }}
-              borderBottom={false}
-              style={{ gap: '12px', minHeight: '56px', cursor: 'pointer' }}
-            >
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '15px', fontWeight: 600, color: colors.ink }}>
-                  Rejected result
-                </div>
-                <div style={{ fontSize: '13px', color: colors.muted }}>
-                  When a credential was altered or forged
-                </div>
-              </div>
-              <Icon name="chevron" size={18} color={colors.muted} />
-            </PanelRow>
+                <Icon name="chevron" size={18} color={colors.bad} />
+              </PanelRow>
+            )}
           </Panel>
         </div>
 
@@ -2156,7 +2330,7 @@ export default function App() {
       ? (WORKER_PROFILES[lastScannedPayload.profileId] || activeProfile)
       : activeProfile;
 
-    const isOk = verifyScenario === 'verified' && !isUberRevoked;
+    const isOk = !verifiedProfile.isUnverifiable && verifyScenario === 'verified' && !isUberRevoked;
 
     return (
       <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -2232,9 +2406,11 @@ export default function App() {
             </button>
             <button
               onClick={() => {
-                const payload = createVerifiablePresentation(activeProfileId, picked, false);
-                setLastScannedPayload(parsePresentationPayload(payload));
-                setVerifyScenario('verified');
+                const isUnverifiable = activeProfile.isUnverifiable === true;
+                const payload = createVerifiablePresentation(activeProfileId, picked, isUnverifiable);
+                const parsed = parsePresentationPayload(payload);
+                setLastScannedPayload(parsed);
+                setVerifyScenario(isUnverifiable ? 'rejected' : 'verified');
               }}
               title="Quick scan from current device wallet"
               style={{
@@ -2286,48 +2462,25 @@ export default function App() {
           )}
         </div>
 
-        {/* Scenario Toggle */}
+        {/* Automatic Presentation Status Indicator (Strictly based on profile authenticity) */}
         <div style={{
           display: 'flex',
-          gap: '8px',
+          alignItems: 'center',
+          gap: '10px',
           marginBottom: '20px',
-          backgroundColor: colors.surface,
-          padding: '4px',
+          backgroundColor: isOk ? colors.okTint : colors.badTint,
+          padding: '12px 16px',
           borderRadius: '10px',
-          border: `1px solid ${colors.line}`
+          border: `1px solid ${isOk ? colors.ok : colors.bad}`
         }}>
-          <button
-            onClick={() => setVerifyScenario('verified')}
-            style={{
-              flex: 1,
-              height: '36px',
-              borderRadius: '8px',
-              border: 'none',
-              backgroundColor: verifyScenario === 'verified' ? colors.brand : 'transparent',
-              color: verifyScenario === 'verified' ? colors.onBrand : colors.muted,
-              fontSize: '13px',
-              fontWeight: 600,
-              cursor: 'pointer'
-            }}
-          >
-            Authentic Presentation
-          </button>
-          <button
-            onClick={() => setVerifyScenario('rejected')}
-            style={{
-              flex: 1,
-              height: '36px',
-              borderRadius: '8px',
-              border: 'none',
-              backgroundColor: verifyScenario === 'rejected' ? colors.bad : 'transparent',
-              color: verifyScenario === 'rejected' ? '#FFFFFF' : colors.muted,
-              fontSize: '13px',
-              fontWeight: 600,
-              cursor: 'pointer'
-            }}
-          >
-            Tampered Presentation
-          </button>
+          <Status
+            kind={isOk ? 'ok' : 'bad'}
+            label={isOk ? 'Authentic Verifiable Presentation' : 'Tampered / Unverifiable Presentation'}
+            size="sm"
+          />
+          <span style={{ fontSize: '12px', color: isOk ? colors.ok : colors.bad, marginLeft: 'auto', fontWeight: 500 }}>
+            {isOk ? 'Cryptographic proof intact' : 'Cryptographic proof failed'}
+          </span>
         </div>
 
         {/* Verification Summary Card */}
@@ -2404,8 +2557,8 @@ export default function App() {
                   {
                     id: 'pres',
                     title: 'Presentation signature',
-                    detail: `Ed25519 key verified for ${verifiedProfile.holderName}.`,
-                    passed: true
+                    detail: isOk ? `Ed25519 key verified for ${verifiedProfile.holderName}.` : `Signature verification failed for ${verifiedProfile.holderName} (Altered/Tampered Proof).`,
+                    passed: isOk
                   },
                   {
                     id: 'iss',
