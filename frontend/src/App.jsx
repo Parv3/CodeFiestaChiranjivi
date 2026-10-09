@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
+import { Html5QrcodeScanner } from 'html5-qrcode';
 
 // Brand colors and tokens from gigwallet
 const colors = {
@@ -206,6 +207,52 @@ function shortDid(did) {
   return `${did.slice(0, 16)}...${did.slice(-8)}`;
 }
 
+/**
+ * Live Camera QR Scanner component using html5-qrcode
+ */
+function CameraScanner({ onScanSuccess, onScanError }) {
+  const scannerRef = useRef(null);
+
+  useEffect(() => {
+    const scanner = new Html5QrcodeScanner(
+      'qr-reader-container',
+      {
+        fps: 10,
+        qrbox: { width: 250, height: 250 },
+        rememberLastUsedCamera: true,
+        supportedScanTypes: [0] // Html5QrcodeScanType.SCAN_TYPE_CAMERA
+      },
+      false
+    );
+
+    scanner.render(
+      (decodedText) => {
+        if (onScanSuccess) {
+          onScanSuccess(decodedText);
+        }
+      },
+      (error) => {
+        // Continuous non-critical scan frame errors can be ignored
+        if (onScanError) onScanError(error);
+      }
+    );
+
+    scannerRef.current = scanner;
+
+    return () => {
+      if (scannerRef.current) {
+        scannerRef.current.clear().catch(() => {});
+      }
+    };
+  }, []);
+
+  return (
+    <div style={{ width: '100%', overflow: 'hidden', borderRadius: '12px' }}>
+      <div id="qr-reader-container" style={{ width: '100%' }} />
+    </div>
+  );
+}
+
 // Initial worker data matching gigwallet mock service
 // Master Mock Credentials according to W3C Verifiable Credentials Standard
 const CREDENTIAL_STORE = {
@@ -374,6 +421,7 @@ export default function App() {
 
   // QR Scanner Modal on Verifier Desk
   const [showScannerModal, setShowScannerModal] = useState(false);
+  const [scannerMode, setScannerMode] = useState('camera'); // 'camera' | 'paste'
   const [scannerRawInput, setScannerRawInput] = useState('');
   const [scannerScanError, setScannerScanError] = useState('');
   const [lastScannedPayload, setLastScannedPayload] = useState(null);
@@ -802,122 +850,202 @@ export default function App() {
                 Point the platform camera at the worker's GigWallet QR code or paste the raw Verifiable Presentation payload below.
               </p>
 
-              {/* Fast Instant Scanner Simulation Buttons */}
+              {/* Scanner Mode Toggle: Camera vs Manual/Simulator */}
               <div style={{
-                backgroundColor: colors.bg,
-                padding: '14px',
-                borderRadius: '12px',
                 display: 'flex',
-                flexDirection: 'column',
-                gap: '8px'
+                gap: '6px',
+                backgroundColor: colors.bg,
+                padding: '4px',
+                borderRadius: '8px'
               }}>
-                <span style={{ fontSize: '12px', fontWeight: 600, color: colors.muted }}>Instant Scanner Simulator:</span>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button
-                    onClick={() => {
-                      const payload = createVerifiablePresentation(['swiggy', 'uber', 'nsdc'], false);
-                      setScannerRawInput(payload);
-                      setLastScannedPayload(JSON.parse(payload));
-                      setVerifyScenario('verified');
-                      setShowScannerModal(false);
-                    }}
-                    style={{
-                      flex: 1,
-                      padding: '8px 12px',
-                      borderRadius: '8px',
-                      backgroundColor: colors.okTint,
-                      border: `1px solid ${colors.ok}`,
-                      color: colors.ok,
-                      fontWeight: 600,
-                      fontSize: '12px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Scan Valid QR
-                  </button>
-                  <button
-                    onClick={() => {
-                      const payload = createVerifiablePresentation(['swiggy', 'uber', 'nsdc'], true);
-                      setScannerRawInput(payload);
-                      setLastScannedPayload(JSON.parse(payload));
-                      setVerifyScenario('rejected');
-                      setShowScannerModal(false);
-                    }}
-                    style={{
-                      flex: 1,
-                      padding: '8px 12px',
-                      borderRadius: '8px',
-                      backgroundColor: colors.badTint,
-                      border: `1px solid ${colors.bad}`,
-                      color: colors.bad,
-                      fontWeight: 600,
-                      fontSize: '12px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Scan Tampered QR
-                  </button>
-                </div>
+                <button
+                  onClick={() => setScannerMode('camera')}
+                  style={{
+                    flex: 1,
+                    padding: '8px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    backgroundColor: scannerMode === 'camera' ? colors.surface : 'transparent',
+                    color: scannerMode === 'camera' ? colors.brand : colors.muted,
+                    fontWeight: 600,
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    boxShadow: scannerMode === 'camera' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
+                  }}
+                >
+                  Live Camera Scanner
+                </button>
+                <button
+                  onClick={() => setScannerMode('paste')}
+                  style={{
+                    flex: 1,
+                    padding: '8px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    backgroundColor: scannerMode === 'paste' ? colors.surface : 'transparent',
+                    color: scannerMode === 'paste' ? colors.brand : colors.muted,
+                    fontWeight: 600,
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    boxShadow: scannerMode === 'paste' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
+                  }}
+                >
+                  Simulator / Paste Payload
+                </button>
               </div>
 
-              {/* Textarea for manual payload input or camera reader stream */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '12px', fontWeight: 600, color: colors.ink }}>
-                  Raw QR Payload (JSON / Verifiable Presentation):
-                </label>
-                <textarea
-                  value={scannerRawInput}
-                  onChange={(e) => {
-                    setScannerRawInput(e.target.value);
-                    setScannerScanError('');
-                  }}
-                  placeholder="Paste VP JSON payload from QR scanner..."
-                  rows={5}
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    borderRadius: '8px',
-                    border: `1px solid ${colors.line}`,
-                    fontFamily: 'JetBrains Mono, monospace',
-                    fontSize: '11px',
-                    color: colors.ink,
-                    resize: 'vertical',
-                    boxSizing: 'border-box'
-                  }}
-                />
-                {scannerScanError && (
-                  <span style={{ fontSize: '12px', color: colors.bad, fontWeight: 500 }}>
-                    {scannerScanError}
+              {/* LIVE CAMERA SCANNER VIEW */}
+              {scannerMode === 'camera' ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{
+                    backgroundColor: '#000000',
+                    borderRadius: '12px',
+                    overflow: 'hidden',
+                    border: `2px solid ${colors.brand}`
+                  }}>
+                    <CameraScanner
+                      onScanSuccess={(decodedText) => {
+                        try {
+                          const parsed = JSON.parse(decodedText);
+                          setLastScannedPayload(parsed);
+                          const hasTamper = parsed.proof?.signatureValue === 'CORRUPT_VP_SIG' ||
+                            parsed.verifiableCredential?.some(c => c.proof?.jws?.includes('INVALID_SIGNATURE_TAMPERED'));
+                          setVerifyScenario(hasTamper ? 'rejected' : 'verified');
+                          setShowScannerModal(false);
+                        } catch (err) {
+                          // If raw string or custom QR
+                          setScannerRawInput(decodedText);
+                          setScannerMode('paste');
+                          setScannerScanError('Scanned text is not standard JSON. You can review and verify manually.');
+                        }
+                      }}
+                      onScanError={() => {}}
+                    />
+                  </div>
+                  <span style={{ fontSize: '11px', color: colors.muted, textAlign: 'center' }}>
+                    Point camera directly at the QR code displayed on the worker phone or screen
                   </span>
-                )}
-              </div>
+                </div>
+              ) : (
+                /* SIMULATOR & PASTE VIEW */
+                <>
+                  <div style={{
+                    backgroundColor: colors.bg,
+                    padding: '12px',
+                    borderRadius: '10px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px'
+                  }}>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: colors.muted }}>Instant Scanner Simulator:</span>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button
+                        onClick={() => {
+                          const payload = createVerifiablePresentation(['swiggy', 'uber', 'nsdc'], false);
+                          setScannerRawInput(payload);
+                          setLastScannedPayload(JSON.parse(payload));
+                          setVerifyScenario('verified');
+                          setShowScannerModal(false);
+                        }}
+                        style={{
+                          flex: 1,
+                          padding: '8px 12px',
+                          borderRadius: '8px',
+                          backgroundColor: colors.okTint,
+                          border: `1px solid ${colors.ok}`,
+                          color: colors.ok,
+                          fontWeight: 600,
+                          fontSize: '12px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Simulate Valid Scan
+                      </button>
+                      <button
+                        onClick={() => {
+                          const payload = createVerifiablePresentation(['swiggy', 'uber', 'nsdc'], true);
+                          setScannerRawInput(payload);
+                          setLastScannedPayload(JSON.parse(payload));
+                          setVerifyScenario('rejected');
+                          setShowScannerModal(false);
+                        }}
+                        style={{
+                          flex: 1,
+                          padding: '8px 12px',
+                          borderRadius: '8px',
+                          backgroundColor: colors.badTint,
+                          border: `1px solid ${colors.bad}`,
+                          color: colors.bad,
+                          fontWeight: 600,
+                          fontSize: '12px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Simulate Tampered Scan
+                      </button>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '12px', fontWeight: 600, color: colors.ink }}>
+                      Raw QR Payload (JSON):
+                    </label>
+                    <textarea
+                      value={scannerRawInput}
+                      onChange={(e) => {
+                        setScannerRawInput(e.target.value);
+                        setScannerScanError('');
+                      }}
+                      placeholder="Paste VP JSON payload from QR scanner..."
+                      rows={4}
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        borderRadius: '8px',
+                        border: `1px solid ${colors.line}`,
+                        fontFamily: 'JetBrains Mono, monospace',
+                        fontSize: '11px',
+                        color: colors.ink,
+                        resize: 'vertical',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                    {scannerScanError && (
+                      <span style={{ fontSize: '12px', color: colors.bad, fontWeight: 500 }}>
+                        {scannerScanError}
+                      </span>
+                    )}
+                  </div>
+                </>
+              )}
 
               <div style={{ display: 'flex', gap: '8px' }}>
                 <Button
-                  label="Cancel"
+                  label="Close"
                   variant="secondary"
                   onClick={() => setShowScannerModal(false)}
                 />
-                <Button
-                  label="Verify Scanned Payload"
-                  onClick={() => {
-                    try {
-                      if (!scannerRawInput.trim()) {
-                        setScannerScanError('Please paste or scan a QR payload first.');
-                        return;
+                {scannerMode === 'paste' && (
+                  <Button
+                    label="Verify Payload"
+                    onClick={() => {
+                      try {
+                        if (!scannerRawInput.trim()) {
+                          setScannerScanError('Please paste or scan a QR payload first.');
+                          return;
+                        }
+                        const parsed = JSON.parse(scannerRawInput);
+                        setLastScannedPayload(parsed);
+                        const hasTamper = parsed.proof?.signatureValue === 'CORRUPT_VP_SIG' ||
+                          parsed.verifiableCredential?.some(c => c.proof?.jws?.includes('INVALID_SIGNATURE_TAMPERED'));
+                        setVerifyScenario(hasTamper ? 'rejected' : 'verified');
+                        setShowScannerModal(false);
+                      } catch (err) {
+                        setScannerScanError('Invalid JSON format. Please ensure valid QR payload.');
                       }
-                      const parsed = JSON.parse(scannerRawInput);
-                      setLastScannedPayload(parsed);
-                      // Check for tamper
-                      const hasTamper = parsed.proof?.signatureValue === 'CORRUPT_VP_SIG' ||
-                        parsed.verifiableCredential?.some(c => c.proof?.jws?.includes('INVALID_SIGNATURE_TAMPERED'));
-                      setVerifyScenario(hasTamper ? 'rejected' : 'verified');
-                      setShowScannerModal(false);
-                    } catch (err) {
-                      setScannerScanError('Invalid JSON format. Please ensure valid QR payload.');
-                    }
-                  }}
-                />
+                    }}
+                  />
+                )}
               </div>
             </div>
           </div>
