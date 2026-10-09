@@ -503,6 +503,28 @@ const WORKER_PROFILES = {
         subtitle: 'Skill India (NSDC) · Distinction',
         status: 'valid'
       }
+    ],
+    inboxRequests: [
+      {
+        id: 'zomato-req',
+        company: 'Zomato Onboarding Desk',
+        initial: 'Z',
+        color: '#E23744',
+        role: 'Gold Fleet Express Onboarding',
+        timeAgo: '5 mins ago',
+        description: 'Zomato is requesting your Swiggy delivery reputation and Govt Two-Wheeler Level 2 certificate to waive partner probation.',
+        requestedCreds: ['Swiggy Reputation (3,240 orders)', 'NSDC Two-Wheeler Distinction']
+      },
+      {
+        id: 'amazon-req',
+        company: 'Amazon Flex Logistics',
+        initial: 'A',
+        color: '#FF9900',
+        role: 'Prime Same-Day Delivery Partner',
+        timeAgo: '1 hour ago',
+        description: 'Amazon Flex wants to verify your Uber rideshare tenure and safe trip record to award priority shift scheduling.',
+        requestedCreds: ['Uber Mobility Record (1,420 trips)', 'Road Safety Clean Record']
+      }
     ]
   },
   priya: {
@@ -542,6 +564,28 @@ const WORKER_PROFILES = {
         subtitle: 'Skill India (Green Mobility)',
         status: 'valid'
       }
+    ],
+    inboxRequests: [
+      {
+        id: 'instamart-req',
+        company: 'Swiggy Instamart Pod',
+        initial: 'S',
+        color: '#FC8019',
+        role: 'Grocery Dark Store Captain',
+        timeAgo: '8 mins ago',
+        description: 'Swiggy Instamart requests your Zepto dark store record and EV certification to appoint you as Dark Store Lead Captain.',
+        requestedCreds: ['Zepto Dark Store Fleet (3,920 tasks)', 'EV Safety Battery Swapping Cert']
+      },
+      {
+        id: 'dunzo-req',
+        company: 'Dunzo Daily B2B',
+        initial: 'D',
+        color: '#00D290',
+        role: 'Priority Logistics Courier',
+        timeAgo: '45 mins ago',
+        description: 'Dunzo Daily wants your Blinkit express history to fast-track Tier 1 priority merchant deliveries.',
+        requestedCreds: ['Blinkit Express Tenure (1,970 dropoffs)', 'Skill India Credential']
+      }
     ]
   },
   amit: {
@@ -574,6 +618,73 @@ const WORKER_PROFILES = {
         subtitle: 'Resolved with advisory strike',
         status: 'warning'
       }
+    ],
+    inboxRequests: [
+      {
+        id: 'rapido-req',
+        company: 'Rapido Bike Taxi',
+        initial: 'R',
+        color: '#F9A825',
+        role: 'Two-Wheeler Captain Onboarding',
+        timeAgo: '12 mins ago',
+        description: 'Rapido wants to verify your Porter ride tenure and driving safety record to approve Captain fleet access.',
+        requestedCreds: ['Porter Courier History (340 trips)', 'Traffic Record Clear Check']
+      },
+      {
+        id: 'shadowfax-req',
+        company: 'Shadowfax Flash',
+        initial: 'S',
+        color: '#1565C0',
+        role: 'E-commerce Courier Onboarding',
+        timeAgo: '2 hours ago',
+        description: 'Shadowfax requires proof of identity and minimum 300 trip deliveries before assigning high-value electronics.',
+        requestedCreds: ['Porter Logistics Tenure', 'Govt Identity Aadhaar Token']
+      }
+    ]
+  },
+  raj: {
+    id: 'raj',
+    holderName: 'Rajesh "Raj" Verma',
+    did: 'did:key:z6MkxINVALIDKeyTamperedProofAddress99X',
+    roleTag: 'Unverified / Altered Certificate Flagged',
+    avatarInitial: '!',
+    avatarColor: '#B3261E',
+    revocationCheckedAt: '3 mins ago (FAIL)',
+    isUnverifiable: true,
+    reputation: {
+      rating: 3.10,
+      outOf: 5,
+      totalTasks: 85,
+      safetyIncidents: 3,
+      tier: 'Unverified (Blacklisted/Suspended)'
+    },
+    credentials: [
+      {
+        id: 'fake_cert',
+        initial: 'X',
+        title: 'NSDC Skill Certificate (Forged)',
+        subtitle: 'Signature mismatch · Certificate ID revoked',
+        status: 'invalid'
+      },
+      {
+        id: 'strike_fraud',
+        initial: '!',
+        title: 'Platform Identity Impersonation',
+        subtitle: 'DID key does not match claimed cryptographic holder',
+        status: 'invalid'
+      }
+    ],
+    inboxRequests: [
+      {
+        id: 'urban-req',
+        company: 'Urban Company',
+        initial: 'U',
+        color: '#2E7D32',
+        role: 'Home Appliance Delivery & Setup',
+        timeAgo: 'Just now',
+        description: 'Urban Company flagged your identity verification audit. Valid cryptographic proof is required before account termination.',
+        requestedCreds: ['Authentic Govt Skill Certificate', 'Verified Biometric Proof']
+      }
     ]
   }
 };
@@ -585,10 +696,11 @@ const WORKER_PROFILES = {
 function createVerifiablePresentation(profileId, selectedKeys, isTampered = false) {
   const profile = WORKER_PROFILES[profileId] || WORKER_PROFILES.ramesh;
   const flags = selectedKeys.join(',');
-  const tamperedFlag = isTampered ? '1' : '0';
+  const isProfileUnverifiable = profile.isUnverifiable || isTampered;
+  const tamperedFlag = isProfileUnverifiable ? '1' : '0';
   const nonce = Date.now().toString(36).slice(-6).toUpperCase();
   // Format: GW-VP:v1:<profileId>:<flags>:<tampered>:<nonce>:<sig>
-  const sig = isTampered ? 'ERR_SIG_FAIL' : 'OK_ED25519_VALID';
+  const sig = isProfileUnverifiable ? 'ERR_SIG_FAIL' : 'OK_ED25519_VALID';
   return `GW-VP:v1:${profile.id}:${flags}:${tamperedFlag}:${nonce}:${sig}`;
 }
 
@@ -601,7 +713,7 @@ function parsePresentationPayload(rawString) {
     const profileId = parts[2] || 'ramesh';
     const profile = WORKER_PROFILES[profileId] || WORKER_PROFILES.ramesh;
     const creds = (parts[3] || 'swiggy,uber,nsdc').split(',');
-    const isTampered = parts[4] === '1';
+    const isTampered = parts[4] === '1' || profile.isUnverifiable === true;
     const nonce = parts[5] || 'VP-OK';
     return {
       profileId: profile.id,
@@ -610,6 +722,7 @@ function parsePresentationPayload(rawString) {
       rating: profile.reputation.rating,
       totalTasks: profile.reputation.totalTasks,
       tier: profile.reputation.tier,
+      isUnverifiable: profile.isUnverifiable,
       nonce: nonce,
       hasTamper: isTampered,
       credentials: creds
@@ -675,8 +788,15 @@ export default function App() {
   const [isInstalled, setIsInstalled] = useState(false);
   const [showInstallModal, setShowInstallModal] = useState(false);
 
-  // Zomato Inbox Verification Request State
-  const [zomatoVerified, setZomatoVerified] = useState(false);
+  // State tracking verified requests across platforms by ID
+  const [verifiedRequests, setVerifiedRequests] = useState(new Set());
+  // Tracks which company is currently active on the Verifier Desk
+  const [activeVerifierContext, setActiveVerifierContext] = useState({
+    company: 'Zomato Onboarding Desk',
+    role: 'Gold Fleet Express Onboarding',
+    color: '#E23744',
+    initial: 'Z'
+  });
 
   // Capture PWA beforeinstallprompt event
   useEffect(() => {
@@ -1327,7 +1447,7 @@ export default function App() {
             }}>
               {[
                 { id: 'wallet', label: 'Wallet', icon: 'wallet' },
-                { id: 'inbox', label: 'Inbox', icon: 'inbox', badge: !zomatoVerified },
+                { id: 'inbox', label: 'Inbox', icon: 'inbox', badge: (activeProfile.inboxRequests || []).some(r => !verifiedRequests.has(r.id)) },
                 { id: 'share', label: 'Share', icon: 'share' },
                 { id: 'me', label: 'Me', icon: 'me' }
               ].map((t) => {
@@ -1658,101 +1778,150 @@ export default function App() {
     );
   }
 
-  /* TAB 3: INBOX WITH ZOMATO VERIFICATION REQUEST */
+  /* TAB 3: INBOX WITH PROFILE-SPECIFIC VERIFICATION REQUESTS */
   function renderInboxScreen() {
+    const requests = activeProfile.inboxRequests || [];
+
     return (
       <div style={{ display: 'flex', flexDirection: 'column' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: 600, color: colors.ink, margin: 0 }}>
-          Inbox
-        </h1>
-
-        {/* Zomato Incoming Request Card */}
-        <div style={{ marginTop: '16px' }}>
-          <Panel>
-            <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '8px',
-                    backgroundColor: colors.zomato,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#FFFFFF',
-                    fontWeight: 800,
-                    fontSize: '18px'
-                  }}>
-                    Z
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '15px', fontWeight: 600, color: colors.ink }}>
-                      Zomato Partner Onboarding
-                    </div>
-                    <div style={{ fontSize: '12px', color: colors.muted }}>
-                      Verification Request · 5 mins ago
-                    </div>
-                  </div>
-                </div>
-                <span style={{
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  padding: '3px 8px',
-                  borderRadius: '6px',
-                  backgroundColor: zomatoVerified ? colors.okTint : colors.zomatoTint,
-                  color: zomatoVerified ? colors.ok : colors.zomato
-                }}>
-                  {zomatoVerified ? 'Verified' : 'Action Required'}
-                </span>
-              </div>
-
-              <div style={{ fontSize: '14px', color: colors.ink, lineHeight: 1.5 }}>
-                {zomatoVerified
-                  ? 'Your reputation credentials have been successfully verified! You are fast-tracked into Zomato Gold Fleet with zero probation.'
-                  : 'Zomato is requesting verification of your delivery track record and government skill certificate to fast-track your partner onboarding.'}
-              </div>
-
-              <div style={{
-                backgroundColor: colors.bg,
-                padding: '10px 12px',
-                borderRadius: '8px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '4px'
-              }}>
-                <div style={{ fontSize: '12px', color: colors.muted, fontWeight: 500 }}>Requested Credentials:</div>
-                <div style={{ fontSize: '12px', color: colors.ink, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Dot on={true} /> Swiggy Delivery Reputation (3,240 deliveries)
-                </div>
-                <div style={{ fontSize: '12px', color: colors.ink, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Dot on={true} /> NSDC Two-Wheeler Level 2 Certificate
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
-                <Button
-                  label={zomatoVerified ? "View Verification Report" : "Verify for Zomato"}
-                  variant={zomatoVerified ? "secondary" : "zomato"}
-                  size="sm"
-                  onClick={() => {
-                    setVerifyScenario('verified');
-                    setZomatoVerified(true);
-                    setTab('verify');
-                  }}
-                />
-              </div>
-            </div>
-          </Panel>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <h1 style={{ fontSize: '24px', fontWeight: 600, color: colors.ink, margin: 0 }}>
+              Inbox
+            </h1>
+            <p style={{ color: colors.muted, margin: '2px 0 0', fontSize: '13px' }}>
+              Pending credential requests for <strong style={{ color: colors.ink }}>{activeProfile.holderName}</strong>
+            </p>
+          </div>
+          <span style={{
+            fontSize: '12px',
+            fontWeight: 700,
+            padding: '4px 10px',
+            borderRadius: '12px',
+            backgroundColor: colors.surface,
+            border: `1px solid ${colors.line}`,
+            color: colors.brand
+          }}>
+            {requests.length} {requests.length === 1 ? 'Request' : 'Requests'}
+          </span>
         </div>
 
-        {/* Additional empty state explanation */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', padding: '24px 0' }}>
-          <h2 style={{ fontSize: '15px', fontWeight: 600, color: colors.muted, margin: 0 }}>
-            No other pending requests
+        {/* Dynamic Incoming Request Cards */}
+        <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          {requests.map((req) => {
+            const isVerified = verifiedRequests.has(req.id);
+            const isFlagged = activeProfile.isUnverifiable;
+
+            return (
+              <Panel key={req.id}>
+                <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{
+                        width: '38px',
+                        height: '38px',
+                        borderRadius: '10px',
+                        backgroundColor: req.color || colors.brand,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#FFFFFF',
+                        fontWeight: 800,
+                        fontSize: '18px',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
+                      }}>
+                        {req.initial}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '15px', fontWeight: 700, color: colors.ink }}>
+                          {req.company}
+                        </div>
+                        <div style={{ fontSize: '12px', color: colors.muted }}>
+                          {req.role} · {req.timeAgo}
+                        </div>
+                      </div>
+                    </div>
+                    <span style={{
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      padding: '3px 8px',
+                      borderRadius: '6px',
+                      backgroundColor: isVerified ? colors.okTint : isFlagged ? colors.badTint : colors.zomatoTint,
+                      color: isVerified ? colors.ok : isFlagged ? colors.bad : (req.color || colors.zomato)
+                    }}>
+                      {isVerified ? 'Verified' : isFlagged ? 'Audit Flagged' : 'Action Required'}
+                    </span>
+                  </div>
+
+                  <div style={{ fontSize: '14px', color: colors.ink, lineHeight: 1.5 }}>
+                    {isVerified
+                      ? `Credentials verified! Fast-track onboarding cleared for ${req.company}.`
+                      : req.description}
+                  </div>
+
+                  <div style={{
+                    backgroundColor: colors.bg,
+                    padding: '10px 12px',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4px'
+                  }}>
+                    <div style={{ fontSize: '12px', color: colors.muted, fontWeight: 600 }}>Requested Credentials:</div>
+                    {(req.requestedCreds || []).map((credText, idx) => (
+                      <div key={idx} style={{ fontSize: '12px', color: colors.ink, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Dot on={!isFlagged} />
+                        <span>{credText}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
+                    <button
+                      onClick={() => {
+                        setActiveVerifierContext({
+                          company: req.company,
+                          role: req.role,
+                          color: req.color || colors.brand,
+                          initial: req.initial
+                        });
+                        setVerifiedRequests((prev) => new Set([...prev, req.id]));
+                        setVerifyScenario(activeProfile.isUnverifiable ? 'rejected' : 'verified');
+                        setTab('verify');
+                      }}
+                      style={{
+                        width: '100%',
+                        height: '42px',
+                        borderRadius: '10px',
+                        border: isVerified ? `1px solid ${colors.lineStrong}` : 'none',
+                        backgroundColor: isVerified ? colors.surface : (req.color || colors.brand),
+                        color: isVerified ? colors.ink : '#FFFFFF',
+                        fontWeight: 600,
+                        fontSize: '13px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        transition: 'opacity 0.15s ease'
+                      }}
+                    >
+                      {isVerified ? 'View Verifier Report' : `Verify with ${req.company}`}
+                    </button>
+                  </div>
+                </div>
+              </Panel>
+            );
+          })}
+        </div>
+
+        {/* Informational banner about independent credentials */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '20px 0' }}>
+          <h2 style={{ fontSize: '14px', fontWeight: 600, color: colors.muted, margin: 0 }}>
+            Selective Disclosure & Privacy
           </h2>
-          <p style={{ fontSize: '13px', color: colors.muted, margin: 0 }}>
-            Incoming credential transfers and platform verification audits will show up here.
+          <p style={{ fontSize: '12px', color: colors.muted, margin: 0, lineHeight: 1.4 }}>
+            Each platform only receives cryptographically signed proofs for the specific credentials requested. Your full wallet history is never exposed.
           </p>
         </div>
       </div>
@@ -1829,11 +1998,24 @@ export default function App() {
                             ACTIVE
                           </span>
                         )}
+                        {prof.isUnverifiable && (
+                          <span style={{
+                            backgroundColor: colors.badTint,
+                            color: colors.bad,
+                            fontSize: '10px',
+                            fontWeight: 700,
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            border: `1px solid ${colors.bad}`
+                          }}>
+                            FORGED TEST ACCOUNT
+                          </span>
+                        )}
                       </div>
-                      <div style={{ fontSize: '12px', color: colors.muted, marginTop: '2px' }}>
+                      <div style={{ fontSize: '12px', color: prof.isUnverifiable ? colors.bad : colors.muted, marginTop: '2px', fontWeight: prof.isUnverifiable ? 600 : 400 }}>
                         {prof.roleTag}
                       </div>
-                      <div style={{ fontSize: '12px', color: colors.ok, fontWeight: 600, marginTop: '2px' }}>
+                      <div style={{ fontSize: '12px', color: prof.isUnverifiable ? colors.bad : colors.ok, fontWeight: 600, marginTop: '2px' }}>
                         ★ {prof.reputation.rating.toFixed(2)} · {prof.reputation.totalTasks.toLocaleString('en-IN')} tasks · {prof.reputation.tier}
                       </div>
                     </div>
@@ -2009,9 +2191,9 @@ export default function App() {
             </button>
             <Brand suffix="Verifier" />
           </div>
-          <div style={{ fontSize: '13px', fontWeight: 600, color: colors.zomato, display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: colors.zomato }} />
-            Zomato Onboarding Desk
+          <div style={{ fontSize: '13px', fontWeight: 600, color: activeVerifierContext.color || colors.zomato, display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: activeVerifierContext.color || colors.zomato }} />
+            {activeVerifierContext.company}
           </div>
         </div>
 
@@ -2199,7 +2381,7 @@ export default function App() {
                 </div>
               ) : (
                 <Button
-                  label={isOk ? `Fast-track as Zomato ${verifiedProfile.reputation.tier}` : 'Reject presentation and scan again'}
+                  label={isOk ? `Fast-track for ${activeVerifierContext.company} (${verifiedProfile.reputation.tier})` : 'Reject presentation and scan again'}
                   variant={isOk ? 'primary' : 'danger'}
                   onClick={() => (isOk ? setDecided(true) : setTab('wallet'))}
                 />
