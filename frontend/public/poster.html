@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GigWallet - Hackathon Architecture Pitch Poster</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+    :root {
+      --bg: #F5F4F0;
+      --surface: #FFFFFF;
+      --surface-dark: #111827;
+      --brand: #1B4D3E;
+      --brand-light: #2D6A4F;
+      --brand-tint: #E8F0EC;
+      --accent: #E8B100;
+      --ink: #1C1B1F;
+      --muted: #6B7280;
+      --line: #E5E7EB;
+      --line-strong: #D1D5DB;
+      --ok: #2E7D32;
+      --ok-tint: #E8F5E9;
+      --bad: #B3261E;
+      --bad-tint: #FFEBEE;
+      --zomato: #E23744;
+      --swiggy: #FC8019;
+      --uber: #000000;
+      --nsdc: #1565C0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #0B0F19;
+      color: #F3F4F6;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      padding: 40px 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .poster {
+      width: 100%;
+      max-width: 1180px;
+      background: #111827;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 28px;
+      overflow: hidden;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+      position: relative;
+    }
+
+    /* Ambient Glow */
+    .glow-1 {
+      position: absolute;
+      top: -120px;
+      right: -80px;
+      width: 450px;
+      height: 450px;
+      background: radial-gradient(circle, rgba(45, 106, 79, 0.35) 0%, rgba(0,0,0,0) 70%);
+      pointer-events: none;
+    }
+    .glow-2 {
+      position: absolute;
+      bottom: -150px;
+      left: -100px;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(232, 177, 0, 0.2) 0%, rgba(0,0,0,0) 70%);
+      pointer-events: none;
+    }
+
+    /* Header */
+    .poster-header {
+      padding: 48px 52px 36px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      position: relative;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(45, 106, 79, 0.25);
+      border: 1px solid rgba(45, 106, 79, 0.6);
+      color: #52B788;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+
+    .badge-pill::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      background-color: #52B788;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #52B788;
+    }
+
+    .poster-title {
+      font-size: 42px;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.8px;
+      color: #FFFFFF;
+      margin-bottom: 12px;
+    }
+
+    .poster-title span {
+      background: linear-gradient(135deg, #52B788 0%, #E8B100 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .poster-subtitle {
+      font-size: 18px;
+      color: #9CA3AF;
+      max-width: 860px;
+      line-height: 1.5;
+    }
+
+    /* Grid Layout */
+    .poster-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 32px;
+      padding: 40px 52px;
+    }
+
+    @media (max-width: 900px) {
+      .poster-grid {
+        grid-template-columns: 1fr;
+        padding: 30px 24px;
+      }
+      .poster-header {
+        padding: 36px 24px 28px;
+      }
+      .poster-title {
+        font-size: 32px;
+      }
+    }
+
+    /* Cards */
+    .card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      backdrop-filter: blur(10px);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: rgba(45, 106, 79, 0.2);
+      border: 1px solid rgba(45, 106, 79, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #52B788;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .card-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #FFFFFF;
+      letter-spacing: -0.3px;
+    }
+
+    /* Problem vs Solution */
+    .vs-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .vs-box {
+      border-radius: 14px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .vs-box.bad {
+      background: rgba(179, 38, 30, 0.12);
+      border: 1px solid rgba(179, 38, 30, 0.35);
+    }
+
+    .vs-box.good {
+      background: rgba(46, 125, 50, 0.12);
+      border: 1px solid rgba(46, 125, 50, 0.35);
+    }
+
+    .vs-box h4 {
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .vs-box.bad h4 { color: #F87171; }
+    .vs-box.good h4 { color: #4ADE80; }
+
+    .vs-box p {
+      font-size: 13px;
+      color: #D1D5DB;
+      line-height: 1.45;
+    }
+
+    /* 3-Actor Diagram Flow */
+    .arch-flow {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: relative;
+    }
+
+    .node {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .node-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+      color: #FFFFFF;
+      flex-shrink: 0;
+    }
+
+    .node-badge.issuer { background: linear-gradient(135deg, #FC8019 0%, #1565C0 100%); }
+    .node-badge.holder { background: linear-gradient(135deg, #1B4D3E 0%, #2D6A4F 100%); }
+    .node-badge.verifier { background: linear-gradient(135deg, #E23744 0%, #FF9900 100%); }
+
+    .node-content h5 {
+      font-size: 15px;
+      font-weight: 700;
+      color: #FFFFFF;
+      margin-bottom: 3px;
+    }
+
+    .node-content p {
+      font-size: 12px;
+      color: #9CA3AF;
+      line-height: 1.4;
+    }
+
+    .arrow-down {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #52B788;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 2px 0;
+    }
+
+    .arrow-down svg {
+      animation: bounce 2s infinite ease-in-out;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(3px); }
+    }
+
+    /* Key Metrics & Standards */
+    .specs-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .spec-item {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .spec-item .val {
+      font-size: 20px;
+      font-weight: 800;
+      color: #52B788;
+      margin-bottom: 2px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .spec-item .lbl {
+      font-size: 11px;
+      font-weight: 600;
+      color: #9CA3AF;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Security Checklist */
+    .checklist {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13px;
+      color: #D1D5DB;
+      line-height: 1.4;
+    }
+
+    .check-icon {
+      color: #52B788;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    /* Footer Banner */
+    .poster-footer {
+      padding: 24px 52px;
+      background: rgba(0, 0, 0, 0.25);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-mark {
+      width: 32px;
+      height: 32px;
+      background: #52B788;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      color: #111827;
+      font-size: 18px;
+    }
+
+    .footer-right {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #6B7280;
+    }
+
+    .highlight-pill {
+      background: rgba(232, 177, 0, 0.15);
+      border: 1px solid rgba(232, 177, 0, 0.5);
+      color: #FBBF24;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="poster">
+    <div class="glow-1"></div>
+    <div class="glow-2"></div>
+
+    <!-- HEADER -->
+    <header class="poster-header">
+      <div class="badge-pill">Problem Statement 02 · Hackathon Presentation Card</div>
+      <h1 class="poster-title">
+        Portable Worker Reputation & <span>Credential Wallet</span>
+      </h1>
+      <p class="poster-subtitle">
+        Empowering 12+ million Indian gig workers with sovereign, cryptographically signed reputation credentials to break platform lock-in and unlock instant zero-probation onboarding.
+      </p>
+    </header>
+
+    <!-- GRID BODY -->
+    <div class="poster-grid">
+
+      <!-- LEFT COLUMN: ARCHITECTURE & TRUST TRIANGLE -->
+      <div style="display: flex; flex-direction: column; gap: 24px;">
+
+        <!-- Architecture Flow -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon">⚡</div>
+            <div>
+              <h3 class="card-title">W3C Decentralized Trust Model</h3>
+              <p style="font-size: 12px; color: #9CA3AF;">Zero Central Servers · Direct Peer-to-Peer Math</p>
+            </div>
+          </div>
+
+          <div class="arch-flow">
+            <!-- Node 1: Issuers -->
+            <div class="node">
+              <div class="node-badge issuer">ISS</div>
+              <div class="node-content">
+                <h5>1. Platform Issuers (Swiggy · Uber · Skill India NSDC)</h5>
+                <p>Issues W3C Verifiable Credentials signed with platform private keys (<code style="color:#52B788; font-size:11px;">did:key:z6Mk...</code> Ed25519).</p>
+              </div>
+            </div>
+
+            <div class="arrow-down">
+              <span>Cryptographic Proof Transfer</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+            </div>
+
+            <!-- Node 2: Holder Wallet -->
+            <div class="node" style="border-color: rgba(82, 183, 136, 0.4); background: rgba(82, 183, 136, 0.06);">
+              <div class="node-badge holder">PWA</div>
+              <div class="node-content">
+                <h5>2. Worker Edge Wallet (Mobile PWA · Offline First)</h5>
+                <p>Stores private keys locally. Aggregates composite rating (e.g. <strong>4.91 / 5</strong>) and issues ephemeral 60s rotating QR code.</p>
+              </div>
+            </div>
+
+            <div class="arrow-down">
+              <span>Dynamic Compact QR Scan (Nonce Rotated)</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+            </div>
+
+            <!-- Node 3: Verifier Desk -->
+            <div class="node">
+              <div class="node-badge verifier">VER</div>
+              <div class="node-content">
+                <h5>3. Verifier Onboarding Desk (Zomato · Rapido · Amazon)</h5>
+                <p>Scans QR via camera, verifies cryptographic signatures locally without calling issuer APIs, and awards instant <strong>Gold Tier Fast-Track</strong>.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Problem vs Solution Matrix -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon">⚖️</div>
+            <h3 class="card-title">Impact Matrix</h3>
+          </div>
+          <div class="vs-container">
+            <div class="vs-box bad">
+              <h4>❌ Walled Garden Status Quo</h4>
+              <p>• 3,000+ deliveries locked in Swiggy/Uber.</p>
+              <p>• Switching platforms forces 30-day probation.</p>
+              <p>• 20-30% lower starting pay & zero priority shifts.</p>
+            </div>
+            <div class="vs-box good">
+              <h4>✅ Sovereign GigWallet</h4>
+              <p>• Worker owns portable proof of 4.91 rating.</p>
+              <p>• Instant fast-track into Zomato Gold Fleet.</p>
+              <p>• Waived probation & priority shift assignment.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN: SPECS, SECURITY & DEMO -->
+      <div style="display: flex; flex-direction: column; gap: 24px;">
+
+        <!-- Standards Specs Grid -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon">🛡️</div>
+            <h3 class="card-title">Cryptographic Specifications</h3>
+          </div>
+          <div class="specs-grid">
+            <div class="spec-item">
+              <div class="val">W3C</div>
+              <div class="lbl">VC Data Model v1.1</div>
+            </div>
+            <div class="spec-item">
+              <div class="val">did:key</div>
+              <div class="lbl">Ed25519 Identifiers</div>
+            </div>
+            <div class="spec-item">
+              <div class="val">&lt; 120B</div>
+              <div class="lbl">Instant QR Payload</div>
+            </div>
+            <div class="spec-item">
+              <div class="val">60s</div>
+              <div class="lbl">Nonce Replay Window</div>
+            </div>
+            <div class="spec-item">
+              <div class="val">100%</div>
+              <div class="lbl">Offline Capable</div>
+            </div>
+            <div class="spec-item">
+              <div class="val">Zero</div>
+              <div class="lbl">Issuer Collusion</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tamper & Fraud Resistance -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon">🔍</div>
+            <h3 class="card-title">Zero-Fraud Verification Engine</h3>
+          </div>
+          <div class="checklist">
+            <div class="check-item">
+              <span class="check-icon">✓</span>
+              <div><strong>Signature Invalidation on Alteration:</strong> Modifying rating, completed tasks, or holder DID breaks Ed25519 mathematical digest (<code style="color:#F87171;">ERR_SIG_FAIL</code>).</div>
+            </div>
+            <div class="check-item">
+              <span class="check-icon">✓</span>
+              <div><strong>Selective Disclosure:</strong> Worker toggles which credentials to disclose (e.g. Swiggy reputation only) without revealing whole identity history.</div>
+            </div>
+            <div class="check-item">
+              <span class="check-icon">✓</span>
+              <div><strong>Central Revocation Checking:</strong> Simulates issuer safety policy strikes; instantly detects revoked transport licenses on-chain or registry.</div>
+            </div>
+            <div class="check-item">
+              <span class="check-icon">✓</span>
+              <div><strong>Anti-Replay Attack Protection:</strong> Ephemeral session nonces rotated every 60 seconds prevent intercepting and reusing past QR screenshots.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Personas Roster -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon">👥</div>
+            <div>
+              <h3 class="card-title">Diverse Multi-Persona Roster</h3>
+              <p style="font-size: 12px; color: #9CA3AF;">7 Built-in Profiles Ready for Live Demo</p>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 13px; padding: 6px 12px; background: rgba(255,255,255,0.03); border-radius: 8px;">
+              <span><strong>Ramesh Kumar</strong> · Swiggy (3.2k) + Uber (1.4k) + NSDC</span>
+              <span style="color: #4ADE80; font-weight: 700; font-size: 11px;">PASS (Gold)</span>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 13px; padding: 6px 12px; background: rgba(255,255,255,0.03); border-radius: 8px;">
+              <span><strong>Priya Sharma</strong> · Zepto + Blinkit + EV Battery Safety</span>
+              <span style="color: #4ADE80; font-weight: 700; font-size: 11px;">PASS (Platinum)</span>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 13px; padding: 6px 12px; background: rgba(255,255,255,0.03); border-radius: 8px;">
+              <span><strong>Ananya Sen</strong> · Urban Salon (1.8k) + CIDESCO Master</span>
+              <span style="color: #4ADE80; font-weight: 700; font-size: 11px;">PASS (Diamond)</span>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 13px; padding: 6px 12px; background: rgba(179,38,30,0.15); border-radius: 8px; border: 1px solid rgba(179,38,30,0.4);">
+              <span><strong>Rajesh & Vikram</strong> · Forged NSDC Cert / Altered License</span>
+              <span style="color: #F87171; font-weight: 700; font-size: 11px;">REJECTED</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="poster-footer">
+      <div class="footer-left">
+        <div class="brand-mark">G</div>
+        <div>
+          <div style="font-weight: 700; font-size: 14px; color: #FFFFFF;">GigWallet · Portable Reputation Engine</div>
+          <div style="font-size: 12px; color: #9CA3AF;">Built for CodeFiesta Hackathon · W3C Verifiable Credentials</div>
+        </div>
+      </div>
+      <div class="footer-right">
+        <span class="highlight-pill">LIVE TESTED: 7 / 7 CRYPTO SUITE PASS</span>
+        <span style="margin-left: 12px;">PWA Offline Ready</span>
+      </div>
+    </footer>
+
+  </div>
+
+</body>
+</html>
